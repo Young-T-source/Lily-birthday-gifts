@@ -6,175 +6,192 @@
 <title>给 Lily 的生日礼物</title>
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
 <style>
-:root {
-  --bg-deep:#0a0a1a; --bg-mid:#140a28; --rose:#ff6b9d; --rose-light:#ff8fab; --rose-pale:#ffc2d4;
-  --gold:#ffd700; --gold-soft:#ffe4a0; --text-warm:#fff5f5; --text-dim:rgba(255,245,245,0.6); --text-faint:rgba(255,245,245,0.35);
-  --serif:'Noto Serif SC','Songti SC','SimSun',serif; --sans:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+:root{
+  --bg-deep:#050510;--bg-mid:#0a0a20;--rose:#ff6b9d;--rose-light:#ff8fab;--rose-pale:#ffc2d4;
+  --gold:#ffd700;--gold-soft:#ffe4a0;--text-warm:#fff5f5;--text-dim:rgba(255,245,245,0.6);--text-faint:rgba(255,245,245,0.35);
+  --serif:'Noto Serif SC','Songti SC','SimSun',serif;--sans:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-deep);color:var(--text-warm);font-family:var(--sans);-webkit-font-smoothing:antialiased}
 
-/* ===== 背景层 ===== */
-#meteor-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+/* ===== 3D环绕星空背景 ===== */
+#starfield-3d{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
 #confetti-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:100;pointer-events:none;display:none}
-.gradient-overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;
-  background:radial-gradient(ellipse at 30% 70%,rgba(255,107,157,0.06) 0%,transparent 50%),radial-gradient(ellipse at 70% 30%,rgba(255,215,0,0.05) 0%,transparent 50%)}
 
 /* ===== 音乐控制 ===== */
-#music-toggle{position:fixed;top:20px;right:20px;z-index:200;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,194,212,0.3);background:rgba(20,10,40,0.6);backdrop-filter:blur(8px);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;opacity:0;pointer-events:none}
+#music-toggle{position:fixed;top:20px;right:20px;z-index:200;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,194,212,0.3);background:rgba(10,10,32,0.6);backdrop-filter:blur(8px);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;opacity:0;pointer-events:none}
 #music-toggle.visible{opacity:1;pointer-events:auto}
 #music-toggle:hover{border-color:var(--rose-light);background:rgba(255,107,157,0.15);transform:scale(1.08)}
 #music-toggle svg{width:20px;height:20px;fill:var(--rose-pale)}
 
 /* ===== 视图容器 ===== */
-.view{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;opacity:0;visibility:hidden;transition:opacity .8s ease,visibility .8s ease}
+.view{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;opacity:0;visibility:hidden;transition:opacity .8s ease,visibility .8s ease}
 .view.active{opacity:1;visibility:visible}
 
 /* ===== 小熊猫3D场景 ===== */
-.panda-scene{position:relative;width:100%;max-width:520px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;perspective:1200px}
-/* 3D舞台 */
-.stage-3d{position:relative;width:340px;height:400px;transform-style:preserve-3d;margin-bottom:10px}
-/* 虚拟屏幕框架 */
-.screen-frame{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) translateZ(-100px);width:300px;height:220px;border:3px solid rgba(255,194,212,0.25);border-radius:16px;background:rgba(20,10,40,0.3);backdrop-filter:blur(2px);box-shadow:0 0 60px rgba(255,107,157,0.1),inset 0 0 40px rgba(255,107,157,0.05)}
-.screen-frame::before{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:60px;height:6px;background:rgba(255,194,212,0.3);border-radius:3px}
-/* 小熊猫图片 */
-.panda-img-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) translateZ(0px);width:260px;height:340px;transition:transform 1.2s cubic-bezier(0.34,1.56,0.64,1);animation:pandaFloat 3s ease-in-out infinite}
-.panda-img-wrap.jumped{transform:translate(-50%,-50%) translateZ(120px) scale(1.1)}
-.panda-img-wrap img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 20px 40px rgba(0,0,0,0.5)) drop-shadow(0 0 30px rgba(255,107,157,0.2))}
-@keyframes pandaFloat{0%,100%{transform:translate(-50%,-50%) translateY(0)}50%{transform:translate(-50%,-50%) translateY(-12px)}}
-.panda-img-wrap.jumped{animation:pandaFloatJump 3s ease-in-out infinite}
-@keyframes pandaFloatJump{0%,100%{transform:translate(-50%,-50%) translateZ(120px) scale(1.1) translateY(0)}50%{transform:translate(-50%,-50%) translateZ(120px) scale(1.1) translateY(-15px)}}
+.panda-scene{position:relative;width:100%;max-width:560px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;perspective:1400px}
+.stage-3d{position:relative;width:360px;height:420px;transform-style:preserve-3d;margin-bottom:8px}
+/* 虚拟屏幕框架（小熊猫从这里跳出） */
+.screen-frame{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) translateZ(-120px);width:320px;height:240px;border:2px solid rgba(255,194,212,0.2);border-radius:14px;background:rgba(10,10,32,0.25);backdrop-filter:blur(2px);box-shadow:0 0 80px rgba(255,107,157,0.08),inset 0 0 50px rgba(100,150,255,0.05)}
+.screen-frame::before{content:'';position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:70px;height:5px;background:rgba(255,194,212,0.25);border-radius:3px}
+.screen-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:280px;height:200px;border-radius:50%;background:radial-gradient(ellipse,rgba(100,180,255,0.12) 0%,transparent 70%);animation:screenGlow 3s ease-in-out infinite;pointer-events:none}
+@keyframes screenGlow{0%,100%{opacity:0.5;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}}
+
+/* 小熊猫SVG容器 */
+.panda-svg-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) translateZ(0px);width:280px;height:360px;transition:transform 1.4s cubic-bezier(0.34,1.56,0.64,1);transform-style:preserve-3d}
+.panda-svg-wrap.jumped{transform:translate(-50%,-50%) translateZ(180px) scale(1.15)}
+.panda-svg-wrap svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 25px 50px rgba(0,0,0,0.6)) drop-shadow(0 0 40px rgba(255,107,157,0.15))}
+
+/* 小熊猫各部分动画 */
+.panda-body-group{transform-origin:center bottom;animation:breathe 3s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scaleY(1) scaleX(1)}50%{transform:scaleY(1.03) scaleX(0.98)}}
+.panda-head-group{transform-origin:center bottom;animation:headBob 4s ease-in-out infinite}
+@keyframes headBob{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}
+.panda-eye{transform-origin:center;transform-box:fill-box;animation:blink 4.5s ease-in-out infinite}
+@keyframes blink{0%,45%,55%,100%{transform:scaleY(1)}50%{transform:scaleY(0.05)}}
+/* 四足行走动画 */
+.panda-leg-fl{transform-origin:top center;transform-box:fill-box;animation:legFL 0.8s ease-in-out infinite}
+.panda-leg-fr{transform-origin:top center;transform-box:fill-box;animation:legFR 0.8s ease-in-out infinite}
+.panda-leg-bl{transform-origin:top center;transform-box:fill-box;animation:legBL 0.8s ease-in-out infinite}
+.panda-leg-br{transform-origin:top center;transform-box:fill-box;animation:legBR 0.8s ease-in-out infinite}
+@keyframes legFL{0%,100%{transform:rotate(0deg)}25%{transform:rotate(25deg)}50%{transform:rotate(0deg)}75%{transform:rotate(-10deg)}}
+@keyframes legFR{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-10deg)}50%{transform:rotate(0deg)}75%{transform:rotate(25deg)}}
+@keyframes legBL{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-15deg)}50%{transform:rotate(0deg)}75%{transform:rotate(20deg)}}
+@keyframes legBR{0%,100%{transform:rotate(0deg)}25%{transform:rotate(20deg)}50%{transform:rotate(0deg)}75%{transform:rotate(-15deg)}}
+/* 跳跃时收起四足 */
+.panda-svg-wrap.jumping .panda-leg-fl,.panda-svg-wrap.jumping .panda-leg-fr{transform:rotate(35deg)!important;animation:none}
+.panda-svg-wrap.jumping .panda-leg-bl,.panda-svg-wrap.jumping .panda-leg-br{transform:rotate(-25deg)!important;animation:none}
+/* 尾巴摇摆 */
+.panda-tail{transform-origin:left center;transform-box:fill-box;animation:tailWag 1.5s ease-in-out infinite}
+@keyframes tailWag{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(15deg)}}
+
 /* 小熊猫光晕 */
-.panda-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(255,107,157,0.15) 0%,transparent 70%);animation:glowPulse 3s ease-in-out infinite;pointer-events:none}
-@keyframes glowPulse{0%,100%{opacity:0.5;transform:translate(-50%,-50%) scale(1)}50%{opacity:0.9;transform:translate(-50%,-50%) scale(1.15)}}
+.panda-aura{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(255,107,157,0.1) 0%,rgba(100,180,255,0.05) 40%,transparent 70%);animation:auraPulse 3.5s ease-in-out infinite;pointer-events:none}
+@keyframes auraPulse{0%,100%{opacity:0.6;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}}
+
 /* 钥匙 */
-.key-wrap{position:absolute;right:-10px;bottom:30%;width:70px;height:100px;opacity:0;transform:scale(0) rotate(-20deg);transition:all .6s cubic-bezier(0.34,1.56,0.64,1);cursor:pointer;z-index:10}
+.key-wrap{position:absolute;right:-5px;bottom:28%;width:65px;height:95px;opacity:0;transform:scale(0) rotate(-20deg);transition:all .6s cubic-bezier(0.34,1.56,0.64,1);cursor:pointer;z-index:10}
 .key-wrap.show{opacity:1;transform:scale(1) rotate(0deg);animation:keyShine 1.5s ease-in-out infinite}
 @keyframes keyShine{0%,100%{filter:drop-shadow(0 0 10px rgba(255,215,0,0.6))}50%{filter:drop-shadow(0 0 25px rgba(255,215,0,0.9))}}
 .key-wrap svg{width:100%;height:100%}
-.key-hint{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--gold-soft);white-space:nowrap;letter-spacing:1px;animation:hintBlink 1.5s ease-in-out infinite}
+.key-hint{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--gold-soft);white-space:nowrap;letter-spacing:1px;animation:hintBlink 1.5s ease-in-out infinite}
 @keyframes hintBlink{0%,100%{opacity:0.4}50%{opacity:1}}
 
 /* ===== 对话框 ===== */
-.dialog-box{position:relative;max-width:380px;width:100%;background:rgba(20,10,40,0.88);border:1px solid rgba(255,194,212,0.3);border-radius:20px;padding:22px 26px;backdrop-filter:blur(10px);margin-top:8px;box-shadow:0 8px 40px rgba(255,107,157,0.15);opacity:0;transform:translateY(20px);transition:all .5s ease}
+.dialog-box{position:relative;max-width:380px;width:100%;background:rgba(10,10,32,0.9);border:1px solid rgba(255,194,212,0.3);border-radius:20px;padding:20px 24px;backdrop-filter:blur(12px);margin-top:6px;box-shadow:0 8px 40px rgba(255,107,157,0.15);opacity:0;transform:translateY(20px);transition:all .5s ease}
 .dialog-box.show{opacity:1;transform:translateY(0)}
-.dialog-box::before{content:'';position:absolute;top:-10px;left:50%;transform:translateX(-50%) rotate(45deg);width:18px;height:18px;background:rgba(20,10,40,0.88);border-left:1px solid rgba(255,194,212,0.3);border-top:1px solid rgba(255,194,212,0.3)}
-.dialog-text{font-family:var(--serif);font-size:16px;line-height:2;color:var(--text-warm);letter-spacing:1px;min-height:50px}
+.dialog-box::before{content:'';position:absolute;top:-9px;left:50%;transform:translateX(-50%) rotate(45deg);width:16px;height:16px;background:rgba(10,10,32,0.9);border-left:1px solid rgba(255,194,212,0.3);border-top:1px solid rgba(255,194,212,0.3)}
+.dialog-text{font-family:var(--serif);font-size:15px;line-height:2;color:var(--text-warm);letter-spacing:1px;min-height:45px}
 .dialog-text .char{opacity:0;display:inline-block;animation:charFade .3s ease forwards}
 @keyframes charFade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-
-/* 对话选项 */
-.dialog-options{display:flex;gap:16px;justify-content:center;margin-top:18px;opacity:0;transition:opacity .5s}
+.dialog-options{display:flex;gap:14px;justify-content:center;margin-top:16px;opacity:0;transition:opacity .5s}
 .dialog-options.show{opacity:1}
-.option-btn{padding:14px 40px;border-radius:50px;font-size:16px;font-family:var(--serif);font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .3s;border:2px solid}
+.option-btn{padding:12px 36px;border-radius:50px;font-size:15px;font-family:var(--serif);font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .3s;border:2px solid}
 .option-btn.yes{background:linear-gradient(135deg,var(--rose),var(--rose-light));border-color:var(--rose);color:#fff;box-shadow:0 4px 20px rgba(255,107,157,0.4)}
 .option-btn.yes:hover{transform:translateY(-2px) scale(1.05);box-shadow:0 8px 30px rgba(255,107,157,0.6)}
 .option-btn.no{background:transparent;border-color:rgba(255,194,212,0.4);color:var(--text-dim)}
 .option-btn.no:hover{border-color:var(--rose-pale);color:var(--rose-pale);transform:scale(1.05)}
-
-/* 开场提示 */
-.opening-hint{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);font-size:13px;color:var(--text-faint);letter-spacing:2px;animation:hintBlink 2s ease-in-out infinite}
+.opening-hint{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--text-faint);letter-spacing:2px;animation:hintBlink 2s ease-in-out infinite}
 
 /* ===== 选择题 ===== */
-.quiz-container{width:100%;max-width:480px;text-align:center}
-.quiz-progress{font-size:13px;color:var(--rose-pale);letter-spacing:2px;margin-bottom:14px;opacity:0.8}
-.quiz-question{font-family:var(--serif);font-size:21px;font-weight:700;color:var(--text-warm);line-height:1.8;margin-bottom:28px;letter-spacing:1px;min-height:70px}
-.quiz-options{display:flex;flex-direction:column;gap:12px}
-.quiz-option{padding:15px 22px;border:1px solid rgba(255,194,212,0.25);border-radius:14px;background:rgba(20,10,40,0.6);color:var(--text-warm);font-size:15px;font-family:var(--serif);font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .3s;text-align:left;position:relative;overflow:hidden}
+.quiz-container{width:100%;max-width:460px;text-align:center}
+.quiz-progress{font-size:12px;color:var(--rose-pale);letter-spacing:2px;margin-bottom:12px;opacity:0.8}
+.quiz-question{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--text-warm);line-height:1.8;margin-bottom:24px;letter-spacing:1px;min-height:65px}
+.quiz-options{display:flex;flex-direction:column;gap:11px}
+.quiz-option{padding:14px 20px;border:1px solid rgba(255,194,212,0.25);border-radius:14px;background:rgba(10,10,32,0.6);color:var(--text-warm);font-size:14px;font-family:var(--serif);font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .3s;text-align:left;position:relative;overflow:hidden}
 .quiz-option:hover{border-color:var(--rose);background:rgba(255,107,157,0.12);transform:translateX(6px)}
 .quiz-option.correct{border-color:#4ade80;background:rgba(74,222,128,0.15);color:#86efac}
 .quiz-option.wrong{border-color:#f87171;background:rgba(248,113,113,0.15);color:#fca5a5;animation:shake .4s ease}
 @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
-.quiz-option .opt-label{display:inline-block;width:26px;color:var(--rose);font-weight:700}
-.quiz-feedback{margin-top:20px;font-size:14px;min-height:22px;font-family:var(--serif);letter-spacing:1px;transition:all .3s}
+.quiz-option .opt-label{display:inline-block;width:24px;color:var(--rose);font-weight:700}
+.quiz-feedback{margin-top:18px;font-size:13px;min-height:20px;font-family:var(--serif);letter-spacing:1px;transition:all .3s}
 .quiz-feedback.success{color:#86efac}
 .quiz-feedback.error{color:#fca5a5}
-.quiz-mini-panda{margin:0 auto 16px;width:100px;height:130px;opacity:0;transform:scale(0);transition:all .5s}
+.quiz-mini-panda{margin:0 auto 14px;width:90px;height:115px;opacity:0;transform:scale(0);transition:all .5s}
 .quiz-mini-panda.show{opacity:1;transform:scale(1)}
-.quiz-mini-panda img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.4))}
+.quiz-mini-panda svg{width:100%;height:100%;overflow:visible}
 
 /* ===== 回忆展示 ===== */
-.memories-wrapper{width:100%;max-width:900px;height:100%;display:flex;flex-direction:column;justify-content:center;position:relative}
-.memory-stage{position:relative;width:100%;aspect-ratio:16/10;border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 80px rgba(255,107,157,0.1);background:var(--bg-mid)}
+.memories-wrapper{width:100%;max-width:880px;height:100%;display:flex;flex-direction:column;justify-content:center;position:relative}
+.memory-stage{position:relative;width:100%;aspect-ratio:16/10;border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 80px rgba(255,107,157,0.1);background:var(--bg-mid)}
 .memory-slide{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transition:opacity 1s ease;display:flex;align-items:center;justify-content:center}
 .memory-slide.active{opacity:1}
 .memory-slide img,.memory-slide video{width:100%;height:100%;object-fit:cover}
-.memory-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:40px}
-.memory-placeholder-icon{width:50px;height:50px;opacity:0.5}
+.memory-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:30px}
+.memory-placeholder-icon{width:48px;height:48px;opacity:0.5}
 .memory-placeholder-icon svg{width:100%;height:100%;stroke:var(--rose-pale);fill:none;stroke-width:1.2}
-.memory-placeholder-text{font-family:var(--serif);font-size:18px;color:var(--text-dim);letter-spacing:2px}
-.memory-placeholder-hint{font-size:12px;color:var(--text-faint);letter-spacing:1px}
+.memory-placeholder-text{font-family:var(--serif);font-size:17px;color:var(--text-dim);letter-spacing:2px}
+.memory-placeholder-hint{font-size:11px;color:var(--text-faint);letter-spacing:1px}
 .ph-1{background:linear-gradient(135deg,#1a0a2e,#2d1b4e,#1a0a2e)}.ph-2{background:linear-gradient(135deg,#2e0a1a,#4e1b2d,#2e0a1a)}
 .ph-3{background:linear-gradient(135deg,#0a1a2e,#1b2d4e,#0a1a2e)}.ph-4{background:linear-gradient(135deg,#2e2a0a,#4e451b,#2e2a0a)}
 .ph-5{background:linear-gradient(135deg,#1a2e0a,#2d4e1b,#1a2e0a)}.ph-6{background:linear-gradient(135deg,#2e0a2e,#4e1b4e,#2e0a2e)}
-.memory-caption{position:absolute;bottom:0;left:0;right:0;padding:36px 28px 24px;background:linear-gradient(transparent,rgba(10,10,26,0.85));z-index:5}
-.memory-caption-title{font-family:var(--serif);font-size:19px;font-weight:700;color:var(--text-warm);margin-bottom:5px;letter-spacing:1px}
-.memory-caption-desc{font-size:13px;color:var(--text-dim);line-height:1.7}
-.memory-caption-date{position:absolute;top:18px;right:22px;font-size:11px;color:var(--rose-pale);letter-spacing:2px;opacity:0.8}
-.memory-nav{display:flex;align-items:center;justify-content:space-between;margin-top:20px;padding:0 8px}
-.memory-arrow{width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,194,212,0.25);background:rgba(20,10,40,0.6);color:var(--rose-pale);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;flex-shrink:0}
+.memory-caption{position:absolute;bottom:0;left:0;right:0;padding:32px 24px 20px;background:linear-gradient(transparent,rgba(5,5,16,0.9));z-index:5}
+.memory-caption-title{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--text-warm);margin-bottom:4px;letter-spacing:1px}
+.memory-caption-desc{font-size:12px;color:var(--text-dim);line-height:1.7}
+.memory-caption-date{position:absolute;top:16px;right:20px;font-size:10px;color:var(--rose-pale);letter-spacing:2px;opacity:0.8}
+.memory-nav{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding:0 6px}
+.memory-arrow{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,194,212,0.25);background:rgba(10,10,32,0.6);color:var(--rose-pale);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;flex-shrink:0}
 .memory-arrow:hover{border-color:var(--rose);background:rgba(255,107,157,0.15);transform:scale(1.1)}
 .memory-arrow:disabled{opacity:0.3;cursor:not-allowed;transform:none}
-.memory-dots{display:flex;gap:8px;align-items:center}
-.memory-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,194,212,0.25);cursor:pointer;transition:all .3s}
-.memory-dot.active{background:var(--rose);width:22px;border-radius:4px;box-shadow:0 0 12px rgba(255,107,157,0.5)}
-.memory-progress-text{font-size:12px;color:var(--text-dim);letter-spacing:1px;min-width:45px;text-align:center}
-.memory-finish-btn{margin-top:18px;padding:11px 32px;border:1px solid rgba(255,194,212,0.3);border-radius:50px;background:transparent;color:var(--text-dim);font-size:12px;font-family:var(--sans);letter-spacing:3px;cursor:pointer;transition:all .3s;align-self:center}
+.memory-dots{display:flex;gap:7px;align-items:center}
+.memory-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,194,212,0.25);cursor:pointer;transition:all .3s}
+.memory-dot.active{background:var(--rose);width:20px;border-radius:4px;box-shadow:0 0 12px rgba(255,107,157,0.5)}
+.memory-progress-text{font-size:11px;color:var(--text-dim);letter-spacing:1px;min-width:42px;text-align:center}
+.memory-finish-btn{margin-top:16px;padding:10px 28px;border:1px solid rgba(255,194,212,0.3);border-radius:50px;background:transparent;color:var(--text-dim);font-size:11px;font-family:var(--sans);letter-spacing:3px;cursor:pointer;transition:all .3s;align-self:center}
 .memory-finish-btn:hover{border-color:var(--rose-light);color:var(--rose-pale);background:rgba(255,107,157,0.1)}
 
 /* ===== 结束告白 ===== */
-.ending-content{text-align:center;max-width:680px;width:100%}
-.ending-message{font-family:var(--serif);font-size:19px;font-weight:600;line-height:2.3;color:var(--text-warm);letter-spacing:1.5px;margin-bottom:44px;text-shadow:0 0 40px rgba(255,107,157,0.25)}
+.ending-content{text-align:center;max-width:660px;width:100%}
+.ending-message{font-family:var(--serif);font-size:18px;font-weight:600;line-height:2.3;color:var(--text-warm);letter-spacing:1.5px;margin-bottom:40px;text-shadow:0 0 40px rgba(255,107,157,0.25)}
 .ending-message .highlight{color:var(--rose-light);font-weight:700}
 .ending-message .gold-text{color:var(--gold)}
-.ending-choices{display:flex;flex-direction:column;gap:14px;max-width:360px;margin:0 auto}
-.choice-btn{padding:16px 26px;border:1px solid rgba(255,194,212,0.3);border-radius:14px;background:rgba(20,10,40,0.5);color:var(--text-warm);font-size:15px;font-family:var(--serif);font-weight:600;letter-spacing:2px;cursor:pointer;transition:all .35s;text-align:left;position:relative;overflow:hidden}
+.ending-choices{display:flex;flex-direction:column;gap:13px;max-width:340px;margin:0 auto}
+.choice-btn{padding:15px 24px;border:1px solid rgba(255,194,212,0.3);border-radius:14px;background:rgba(10,10,32,0.5);color:var(--text-warm);font-size:14px;font-family:var(--serif);font-weight:600;letter-spacing:2px;cursor:pointer;transition:all .35s;text-align:left;position:relative;overflow:hidden}
 .choice-btn:hover{border-color:var(--rose);background:rgba(255,107,157,0.12);transform:translateX(6px);box-shadow:0 4px 24px rgba(255,107,157,0.2)}
-.choice-btn .choice-label{display:inline-block;width:26px;color:var(--rose);font-weight:700}
+.choice-btn .choice-label{display:inline-block;width:24px;color:var(--rose);font-weight:700}
 
 /* ===== 最终页 ===== */
-.final-content{text-align:center;max-width:600px;width:100%}
-.final-title{font-family:var(--serif);font-size:30px;font-weight:900;color:var(--text-warm);letter-spacing:3px;margin-bottom:18px;line-height:1.6;text-shadow:0 0 50px rgba(255,107,157,0.4);animation:finalGlow 3s ease-in-out infinite}
+.final-content{text-align:center;max-width:580px;width:100%}
+.final-title{font-family:var(--serif);font-size:28px;font-weight:900;color:var(--text-warm);letter-spacing:3px;margin-bottom:16px;line-height:1.6;text-shadow:0 0 50px rgba(255,107,157,0.4);animation:finalGlow 3s ease-in-out infinite}
 @keyframes finalGlow{0%,100%{text-shadow:0 0 30px rgba(255,107,157,0.3)}50%{text-shadow:0 0 60px rgba(255,107,157,0.6),0 0 100px rgba(255,215,0,0.2)}}
-.final-subtitle{font-size:14px;color:var(--text-dim);letter-spacing:2px;line-height:2;margin-bottom:36px}
-.final-heart{width:90px;height:90px;margin:0 auto 28px;animation:heartBeat 1.2s ease-in-out infinite}
+.final-subtitle{font-size:13px;color:var(--text-dim);letter-spacing:2px;line-height:2;margin-bottom:32px}
+.final-heart{width:85px;height:85px;margin:0 auto 24px;animation:heartBeat 1.2s ease-in-out infinite}
 .final-heart svg{width:100%;height:100%;filter:drop-shadow(0 0 30px rgba(255,107,157,0.6))}
 @keyframes heartBeat{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1)}45%{transform:scale(1.1)}60%{transform:scale(1)}}
-.final-signature{font-family:var(--serif);font-size:13px;color:var(--rose-pale);letter-spacing:4px;margin-top:20px;opacity:0.8}
+.final-signature{font-family:var(--serif);font-size:12px;color:var(--rose-pale);letter-spacing:4px;margin-top:18px;opacity:0.8}
 
 /* ===== 响应式 ===== */
 @media (max-width:768px){
-  .stage-3d{width:280px;height:340px}
-  .panda-img-wrap{width:220px;height:290px}
-  .screen-frame{width:250px;height:180px}
-  .dialog-box{max-width:340px;padding:18px 22px}
-  .dialog-text{font-size:15px}
-  .quiz-question{font-size:18px}
-  .quiz-option{font-size:14px;padding:13px 18px}
-  .ending-message{font-size:16px;line-height:2.1}
-  .final-title{font-size:24px}
+  .stage-3d{width:300px;height:360px}
+  .panda-svg-wrap{width:240px;height:310px}
+  .screen-frame{width:270px;height:200px}
+  .dialog-box{max-width:340px;padding:18px 20px}
+  .dialog-text{font-size:14px}
+  .quiz-question{font-size:17px}
+  .quiz-option{font-size:13px;padding:12px 16px}
+  .ending-message{font-size:15px;line-height:2.1}
+  .final-title{font-size:22px}
   .memory-stage{aspect-ratio:4/3}
-  .memory-caption{padding:28px 18px 18px}
-  .memory-caption-title{font-size:16px}
-  .choice-btn{font-size:14px;padding:14px 20px}
-  .view{padding:24px 16px}
+  .memory-caption{padding:26px 16px 16px}
+  .memory-caption-title{font-size:15px}
+  .choice-btn{font-size:13px;padding:13px 18px}
+  .view{padding:20px 14px}
 }
 @media (max-width:480px){
-  .stage-3d{width:240px;height:300px}
-  .panda-img-wrap{width:190px;height:250px}
-  .dialog-text{font-size:14px;line-height:1.9}
-  .quiz-question{font-size:16px}
-  .ending-message{font-size:14px;line-height:2}
-  .final-title{font-size:20px}
-  .option-btn{padding:12px 32px;font-size:14px}
-  .key-wrap{width:55px;height:80px}
+  .stage-3d{width:260px;height:320px}
+  .panda-svg-wrap{width:210px;height:270px}
+  .dialog-text{font-size:13px;line-height:1.9}
+  .quiz-question{font-size:15px}
+  .ending-message{font-size:13px;line-height:2}
+  .final-title{font-size:19px}
+  .option-btn{padding:10px 28px;font-size:13px}
+  .key-wrap{width:52px;height:78px}
 }
 </style>
 </head>
 <body>
 
-<canvas id="meteor-canvas"></canvas>
-<div class="gradient-overlay"></div>
+<canvas id="starfield-3d"></canvas>
 <canvas id="confetti-canvas"></canvas>
 
 <audio id="bg-music" loop preload="auto"><source src="" type="audio/mpeg"></audio>
@@ -184,14 +201,79 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-deep);color
   <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
 </button>
 
+<!-- ===== 小熊猫SVG定义（复用） ===== -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="panda-full" viewBox="0 0 300 380">
+      <!-- 尾巴 -->
+      <ellipse class="panda-tail" cx="55" cy="230" rx="18" ry="14" fill="#fff"/>
+      <!-- 后腿 -->
+      <ellipse class="panda-leg-bl" cx="95" cy="320" rx="22" ry="35" fill="#fff"/>
+      <ellipse class="panda-leg-br" cx="205" cy="320" rx="22" ry="35" fill="#fff"/>
+      <ellipse cx="95" cy="348" rx="24" ry="12" fill="#f0f0f0"/>
+      <ellipse cx="205" cy="348" rx="24" ry="12" fill="#f0f0f0"/>
+      <!-- 身体（红色灯笼） -->
+      <g class="panda-body-group">
+        <ellipse cx="150" cy="240" rx="85" ry="80" fill="#d42828"/>
+        <path d="M75 200 Q70 240 75 280" stroke="#ffd700" stroke-width="2.5" fill="none" opacity="0.6"/>
+        <path d="M225 200 Q230 240 225 280" stroke="#ffd700" stroke-width="2.5" fill="none" opacity="0.6"/>
+        <text x="150" y="260" text-anchor="middle" fill="#ffd700" font-size="48" font-family="serif" font-weight="bold">福</text>
+        <!-- 金色项圈 -->
+        <ellipse cx="150" cy="168" rx="70" ry="10" fill="#ffd700"/>
+        <ellipse cx="150" cy="166" rx="70" ry="6" fill="#ffed4a" opacity="0.4"/>
+      </g>
+      <!-- 前腿 -->
+      <ellipse class="panda-leg-fl" cx="100" cy="290" rx="18" ry="32" fill="#fff"/>
+      <ellipse class="panda-leg-fr" cx="200" cy="290" rx="18" ry="32" fill="#fff"/>
+      <ellipse cx="100" cy="316" rx="20" ry="10" fill="#f0f0f0"/>
+      <ellipse cx="200" cy="316" rx="20" ry="10" fill="#f0f0f0"/>
+      <!-- 头部 -->
+      <g class="panda-head-group">
+        <!-- 耳朵 -->
+        <ellipse cx="85" cy="85" rx="22" ry="26" fill="#1a1a1a" transform="rotate(-20 85 85)"/>
+        <ellipse cx="215" cy="85" rx="22" ry="26" fill="#1a1a1a" transform="rotate(20 215 85)"/>
+        <ellipse cx="85" cy="88" rx="12" ry="14" fill="#333" transform="rotate(-20 85 88)"/>
+        <ellipse cx="215" cy="88" rx="12" ry="14" fill="#333" transform="rotate(20 215 88)"/>
+        <!-- 头 -->
+        <ellipse cx="150" cy="115" rx="82" ry="75" fill="#fff"/>
+        <ellipse cx="150" cy="115" rx="84" ry="77" fill="none" stroke="#fff" stroke-width="2" opacity="0.2"/>
+        <!-- 黑色眼圈 -->
+        <ellipse cx="112" cy="112" rx="26" ry="33" fill="#1a1a1a" transform="rotate(-10 112 112)"/>
+        <ellipse cx="188" cy="112" rx="26" ry="33" fill="#1a1a1a" transform="rotate(10 188 112)"/>
+        <!-- 眼睛（蓝绿色） -->
+        <g class="panda-eye">
+          <ellipse cx="112" cy="112" rx="13" ry="17" fill="#4a9d9d"/>
+          <circle cx="116" cy="106" r="4" fill="#fff"/>
+          <circle cx="108" cy="118" r="2" fill="#fff" opacity="0.5"/>
+        </g>
+        <g class="panda-eye" style="animation-delay:0.1s">
+          <ellipse cx="188" cy="112" rx="13" ry="17" fill="#4a9d9d"/>
+          <circle cx="192" cy="106" r="4" fill="#fff"/>
+          <circle cx="184" cy="118" r="2" fill="#fff" opacity="0.5"/>
+        </g>
+        <!-- 额头红点 -->
+        <circle cx="150" cy="58" r="7" fill="#d42828"/>
+        <circle cx="148" cy="56" r="2.5" fill="#ff6b6b" opacity="0.5"/>
+        <!-- 鼻子 -->
+        <ellipse cx="150" cy="140" rx="8" ry="5.5" fill="#1a1a1a"/>
+        <ellipse cx="147" cy="138" rx="2.5" ry="1.5" fill="#444" opacity="0.4"/>
+        <!-- 嘴巴 -->
+        <path d="M130 150 Q150 168 170 150" stroke="#1a1a1a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="150" cy="162" rx="8" ry="6" fill="#e8505b"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
 <!-- ===== 视图1：小熊猫3D场景 ===== -->
 <section class="view active" data-route="panda" id="view-panda">
   <div class="panda-scene">
     <div class="stage-3d">
-      <div class="panda-glow"></div>
+      <div class="panda-aura"></div>
+      <div class="screen-glow"></div>
       <div class="screen-frame"></div>
-      <div class="panda-img-wrap" id="panda-wrap">
-        <img src="./panda.png" alt="祈福小熊猫" id="panda-img">
+      <div class="panda-svg-wrap" id="panda-wrap">
+        <svg><use href="#panda-full"/></svg>
       </div>
       <div class="key-wrap" id="key-wrap">
         <svg viewBox="0 0 80 120">
@@ -219,7 +301,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-deep);color
 <!-- ===== 视图2：选择题 ===== -->
 <section class="view" data-route="quiz" id="view-quiz">
   <div class="quiz-container">
-    <div class="quiz-mini-panda" id="quiz-mini-panda"><img src="./panda.png" alt="小熊猫"></div>
+    <div class="quiz-mini-panda" id="quiz-mini-panda"><svg><use href="#panda-full"/></svg></div>
     <div class="quiz-progress" id="quiz-progress">第 1 / 4 题</div>
     <div class="quiz-question" id="quiz-question"></div>
     <div class="quiz-options" id="quiz-options"></div>
@@ -293,7 +375,6 @@ const MEMORIES = [
   {type:'image',src:'',title:'跨年夜',desc:'倒计时的钟声里，我偷偷许下了一个关于你的愿望。',date:'2024.12.31',phClass:'ph-5'},
   {type:'video',src:'',title:'两周年',desc:'七百多个日夜，每一天都因为你而闪闪发光。',date:'2026.09.05',phClass:'ph-6'}
 ];
-
 const state = {currentRoute:'panda',pandaStage:'idle',quizIndex:0,quizQ1Attempts:0,memoryIndex:0,autoPlayTimer:null,musicPlaying:false};
 
 function navigate(route){
@@ -306,80 +387,90 @@ function navigate(route){
   if(route==='panda')stopConfetti();
 }
 
-/* ===== 增强流星雨背景 ===== */
-(function initMeteor(){
-  const canvas=document.getElementById('meteor-canvas');
+/* ===== 3D环绕星空 ===== */
+(function initStarfield3D(){
+  const canvas=document.getElementById('starfield-3d');
   const ctx=canvas.getContext('2d');
-  let w,h,stars=[],meteors=[];
+  let w,h,stars=[],meteors=[],rotationY=0,rotationX=0.15;
   function resize(){w=canvas.width=innerWidth;h=canvas.height=innerHeight;}
   resize();addEventListener('resize',resize);
-  // 繁星密布（400+颗，多种颜色）
-  const starColors=['rgba(255,255,255,','rgba(255,228,160,','rgba(255,182,193,','rgba(173,216,230,','rgba(255,240,245,'];
-  const starCount=Math.min(450,Math.floor(w*h/6000));
+  const focal=Math.max(w,h)*0.8;
+  // 生成3D星点（球面分布，银河带增加密度）
+  const starCount=Math.min(1200,Math.floor(w*h/1200));
   for(let i=0;i<starCount;i++){
-    stars.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.8+0.3,
-      color:starColors[Math.floor(Math.random()*starColors.length)],
-      a:Math.random()*0.7+0.2,p:Math.random()*6.28,s:Math.random()*0.025+0.008,
-      twinkleSpeed:Math.random()*0.03+0.01});
+    // 球面坐标
+    const theta=Math.random()*Math.PI*2;
+    const phi=Math.acos(2*Math.random()-1);
+    const r=800+Math.random()*400;
+    // 银河带（phi接近PI/2的区域更亮更密）
+    const galacticDist=Math.abs(phi-Math.PI/2);
+    const inGalaxy=galacticDist<0.35;
+    stars.push({
+      x:r*Math.sin(phi)*Math.cos(theta),
+      y:r*Math.cos(phi),
+      z:r*Math.sin(phi)*Math.sin(theta),
+      baseSize:inGalaxy?Math.random()*2+0.8:Math.random()*1.5+0.3,
+      baseAlpha:inGalaxy?Math.random()*0.5+0.4:Math.random()*0.5+0.2,
+      twinkle:Math.random()*Math.PI*2,
+      twinkleSpeed:Math.random()*0.03+0.008,
+      color:inGalaxy?(Math.random()>0.5?'rgba(255,240,220,':'rgba(200,220,255,'):(Math.random()>0.7?'rgba(255,200,220,':'rgba(255,255,255,')
+    });
   }
-  // 银河光带
-  function drawGalaxy(){
-    ctx.save();
-    ctx.translate(w*0.3,h*0.4);
-    ctx.rotate(-0.3);
-    const grad=ctx.createRadialGradient(0,0,0,0,0,w*0.6);
-    grad.addColorStop(0,'rgba(255,182,193,0.04)');
-    grad.addColorStop(0.3,'rgba(173,216,230,0.03)');
-    grad.addColorStop(0.6,'rgba(255,228,160,0.02)');
-    grad.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=grad;
-    ctx.beginPath();ctx.ellipse(0,0,w*0.6,h*0.15,0,0,6.28);ctx.fill();
-    ctx.restore();
-  }
-  // 多道流星并行
-  const meteorColors=[
-    {head:'rgba(255,240,200,',tail1:'rgba(255,182,193,',tail2:'rgba(255,107,157,'},
-    {head:'rgba(200,230,255,',tail1:'rgba(173,216,230,',tail2:'rgba(100,149,237,'},
-    {head:'rgba(255,255,255,',tail1:'rgba(255,228,160,',tail2:'rgba(255,215,0,'}
-  ];
+  // 流星
   function spawnMeteor(){
-    const startX=Math.random()*w*0.7+w*0.1;
-    const colorSet=meteorColors[Math.floor(Math.random()*meteorColors.length)];
-    meteors.push({x:startX,y:-30,len:Math.random()*120+80,speed:Math.random()*8+10,
-      angle:Math.PI/4+Math.random()*0.25,alpha:1,size:Math.random()*2.5+1.5,colors:colorSet});
+    const theta=Math.random()*Math.PI*2;
+    const phi=Math.PI/2+(Math.random()-0.5)*0.8;
+    const r=600;
+    meteors.push({
+      x:r*Math.sin(phi)*Math.cos(theta),y:r*Math.cos(phi),z:r*Math.sin(phi)*Math.sin(theta),
+      vx:(Math.random()-0.5)*3,vy:Math.random()*2+1,vz:(Math.random()-0.5)*3,
+      len:Math.random()*80+60,alpha:1,size:Math.random()*2+1.5
+    });
   }
-  // 更频繁生成流星，确保多道并行
-  setInterval(spawnMeteor,250);
-  setInterval(spawnMeteor,400);
+  setInterval(spawnMeteor,350);
+  setInterval(spawnMeteor,600);
+  function project(x,y,z){
+    const scale=focal/(focal+z);
+    return {x:w/2+x*scale,y:h/2+y*scale,scale:scale};
+  }
+  function rotateY(x,z,angle){return {x:x*Math.cos(angle)-z*Math.sin(angle),z:x*Math.sin(angle)+z*Math.cos(angle)};}
+  function rotateX(y,z,angle){return {y:y*Math.cos(angle)-z*Math.sin(angle),z:y*Math.sin(angle)+z*Math.cos(angle)};}
   function animate(){
-    ctx.clearRect(0,0,w,h);
-    drawGalaxy();
+    ctx.fillStyle='rgba(5,5,16,0.3)';
+    ctx.fillRect(0,0,w,h);
+    rotationY+=0.0008;
     // 星星
     for(const s of stars){
-      s.p+=s.twinkleSpeed;
-      const alpha=s.a*(0.4+0.6*Math.abs(Math.sin(s.p)));
-      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.28);
+      s.twinkle+=s.twinkleSpeed;
+      let r1=rotateY(s.x,s.z,rotationY);
+      let r2=rotateX(s.y,r1.z,rotationX);
+      if(r2.z<-focal)continue;
+      const p=project(r1.x,r2.y,r2.z);
+      const alpha=s.baseAlpha*(0.5+0.5*Math.sin(s.twinkle))*Math.min(1,p.scale*1.5);
+      const size=s.baseSize*p.scale;
+      ctx.beginPath();ctx.arc(p.x,p.y,size,0,6.28);
       ctx.fillStyle=s.color+alpha+')';ctx.fill();
-      if(s.r>1.3){ctx.beginPath();ctx.arc(s.x,s.y,s.r*3,0,6.28);
-        ctx.fillStyle=s.color+(alpha*0.06)+')';ctx.fill();}
+      if(size>1.5){ctx.beginPath();ctx.arc(p.x,p.y,size*3,0,6.28);ctx.fillStyle=s.color+(alpha*0.08)+')';ctx.fill();}
     }
     // 流星
     for(let i=meteors.length-1;i>=0;i--){
       const m=meteors[i];
-      m.x+=Math.cos(m.angle)*m.speed;m.y+=Math.sin(m.angle)*m.speed;m.alpha-=0.006;
-      if(m.alpha<=0||m.y>h+50){meteors.splice(i,1);continue;}
-      const tailX=m.x-Math.cos(m.angle)*m.len;
-      const tailY=m.y-Math.sin(m.angle)*m.len;
-      const grad=ctx.createLinearGradient(m.x,m.y,tailX,tailY);
-      grad.addColorStop(0,m.colors.head+m.alpha+')');
-      grad.addColorStop(0.25,m.colors.tail1+(m.alpha*0.7)+')');
-      grad.addColorStop(0.6,m.colors.tail2+(m.alpha*0.3)+')');
-      grad.addColorStop(1,'rgba(255,255,255,0)');
-      ctx.beginPath();ctx.moveTo(m.x,m.y);ctx.lineTo(tailX,tailY);
-      ctx.strokeStyle=grad;ctx.lineWidth=m.size;ctx.lineCap='round';ctx.stroke();
-      // 流星头部光晕
-      ctx.beginPath();ctx.arc(m.x,m.y,m.size*2.5,0,6.28);
-      ctx.fillStyle=m.colors.head+(m.alpha*0.3)+')';ctx.fill();
+      m.x+=m.vx;m.y+=m.vy;m.z+=m.vz;m.alpha-=0.008;
+      if(m.alpha<=0){meteors.splice(i,1);continue;}
+      let r1=rotateY(m.x,m.z,rotationY);
+      let r2=rotateX(m.y,r1.z,rotationX);
+      if(r2.z<-focal)continue;
+      const p=project(r1.x,r2.y,r2.z);
+      // 流星尾迹（沿速度方向）
+      const tx=p.x-m.vx*15*p.scale,ty=p.y-m.vy*15*p.scale;
+      const grad=ctx.createLinearGradient(p.x,p.y,tx,ty);
+      grad.addColorStop(0,'rgba(255,250,230,'+m.alpha+')');
+      grad.addColorStop(0.3,'rgba(255,200,220,'+(m.alpha*0.6)+')');
+      grad.addColorStop(1,'rgba(100,180,255,0)');
+      ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(tx,ty);
+      ctx.strokeStyle=grad;ctx.lineWidth=m.size*p.scale;ctx.lineCap='round';ctx.stroke();
+      ctx.beginPath();ctx.arc(p.x,p.y,m.size*2*p.scale,0,6.28);
+      ctx.fillStyle='rgba(255,250,230,'+(m.alpha*0.4)+')';ctx.fill();
     }
     requestAnimationFrame(animate);
   }
@@ -393,14 +484,8 @@ const confetti=(function(){
   function resize(){w=canvas.width=innerWidth;h=canvas.height=innerHeight;}
   resize();addEventListener('resize',resize);
   const colors=['#ff6b9d','#ff8fab','#ffc2d4','#ffe4a0','#fff3d6','#ff4d8d','#ffa0c0'];
-  function createP(x,y,burst){return{x:x!==undefined?x:Math.random()*w,y:y!==undefined?y:-20,
-    vx:burst?(Math.random()-0.5)*12:(Math.random()-0.5)*2,vy:burst?-Math.random()*15-5:Math.random()*2+1,
-    size:Math.random()*14+8,color:colors[Math.floor(Math.random()*colors.length)],
-    rot:Math.random()*6.28,rs:(Math.random()-0.5)*0.1,heart:Math.random()>0.4,life:1,decay:burst?0.003:0.001,
-    g:burst?0.25:0.05,wob:Math.random()*6.28,ws:Math.random()*0.05+0.02};}
-  function drawHeart(x,y,s,c,r){ctx.save();ctx.translate(x,y);ctx.rotate(r);ctx.scale(s/30,s/30);
-    ctx.beginPath();ctx.moveTo(0,8);ctx.bezierCurveTo(-14,-4,-14,-18,0,-8);ctx.bezierCurveTo(14,-18,14,-4,0,8);
-    ctx.fillStyle=c;ctx.fill();ctx.restore();}
+  function createP(x,y,burst){return{x:x!==undefined?x:Math.random()*w,y:y!==undefined?y:-20,vx:burst?(Math.random()-0.5)*12:(Math.random()-0.5)*2,vy:burst?-Math.random()*15-5:Math.random()*2+1,size:Math.random()*14+8,color:colors[Math.floor(Math.random()*colors.length)],rot:Math.random()*6.28,rs:(Math.random()-0.5)*0.1,heart:Math.random()>0.4,life:1,decay:burst?0.003:0.001,g:burst?0.25:0.05,wob:Math.random()*6.28,ws:Math.random()*0.05+0.02};}
+  function drawHeart(x,y,s,c,r){ctx.save();ctx.translate(x,y);ctx.rotate(r);ctx.scale(s/30,s/30);ctx.beginPath();ctx.moveTo(0,8);ctx.bezierCurveTo(-14,-4,-14,-18,0,-8);ctx.bezierCurveTo(14,-18,14,-4,0,8);ctx.fillStyle=c;ctx.fill();ctx.restore();}
   function update(){ctx.clearRect(0,0,w,h);
     for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.wob+=p.ws;p.x+=p.vx+Math.sin(p.wob)*0.8;p.y+=p.vy;p.vy+=p.g;p.rot+=p.rs;p.life-=p.decay;
       if(p.life<=0||p.y>h+50){particles.splice(i,1);continue;}
@@ -409,8 +494,7 @@ const confetti=(function(){
       else{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.beginPath();ctx.ellipse(0,0,p.size,p.size*0.5,0,0,6.28);ctx.fillStyle=p.color;ctx.globalAlpha*=0.85;ctx.fill();ctx.restore();}}
     ctx.globalAlpha=1;
     if(running||particles.length>0)animId=requestAnimationFrame(update);else canvas.style.display='none';}
-  return{start:function(){if(running)return;running=true;canvas.style.display='block';
-    const sp=setInterval(function(){if(!running){clearInterval(sp);return;}for(let i=0;i<3;i++)particles.push(createP());},100);update();},
+  return{start:function(){if(running)return;running=true;canvas.style.display='block';const sp=setInterval(function(){if(!running){clearInterval(sp);return;}for(let i=0;i<3;i++)particles.push(createP());},100);update();},
     burst:function(){canvas.style.display='block';for(let i=0;i<80;i++)particles.push(createP(w/2,h/2,true));if(!animId)update();},
     stop:function(){running=false;}};
 })();
@@ -424,7 +508,6 @@ const dialogText=document.getElementById('dialog-text');
 const dialogOptions=document.getElementById('dialog-options');
 const openingHint=document.getElementById('opening-hint');
 const keyWrap=document.getElementById('key-wrap');
-
 const DIALOG1_TEXT='Lily 你能看到我在向你眨眼吗？';
 const DIALOG2_TEXT='你的小熊猫向你送来最真挚的生日祝福！——愿你一直能够成长在充满爱的环境里，勇敢的去cosplay你喜欢的角色，身体中的妖魔鬼怪永远绕开你，你将会变得像Young.T那般无所无惧、勇往直前、意志坚定！';
 
@@ -444,14 +527,18 @@ document.getElementById('view-panda').addEventListener('click',function(e){
 function startDialog1(){
   state.pandaStage='dialog1';
   openingHint.style.display='none';
-  // 小熊猫从屏幕跳出
-  pandaWrap.classList.add('jumped');
+  // 小熊猫跳跃跳出屏幕
+  pandaWrap.classList.add('jumping');
+  setTimeout(function(){
+    pandaWrap.classList.remove('jumping');
+    pandaWrap.classList.add('jumped');
+  },400);
   setTimeout(function(){
     dialogBox.classList.add('show');
     typeText(dialogText,DIALOG1_TEXT,80,function(){
       setTimeout(function(){dialogOptions.classList.add('show');},800);
     });
-  },800);
+  },1000);
 }
 
 document.getElementById('opt-yes').addEventListener('click',function(e){
@@ -466,8 +553,6 @@ document.getElementById('opt-no').addEventListener('click',function(e){
   e.stopPropagation();
   if(state.pandaStage!=='dialog1')return;
   dialogOptions.classList.remove('show');
-  // 小熊猫轻微缩放表示沮丧
-  pandaWrap.style.transition='transform .5s ease';
   pandaWrap.style.filter='brightness(0.85)';
   setTimeout(function(){
     pandaWrap.style.filter='';
