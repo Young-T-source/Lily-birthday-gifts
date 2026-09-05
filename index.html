@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>给 Lily 的生日礼物</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<style>
+/* ============================================================
+   配色与变量
+   ============================================================ */
+:root {
+  --bg-deep: #0a0a1a;
+  --bg-mid: #140a28;
+  --bg-soft: #1e0f35;
+  --rose: #ff6b9d;
+  --rose-light: #ff8fab;
+  --rose-pale: #ffc2d4;
+  --gold: #ffe4a0;
+  --gold-soft: #fff3d6;
+  --text-warm: #fff5f5;
+  --text-dim: rgba(255, 245, 245, 0.6);
+  --text-faint: rgba(255, 245, 245, 0.35);
+  --serif: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+  --sans: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-deep);
+  color: var(--text-warm);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   背景层
+   ============================================================ */
+#starfield {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#confetti-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 100;
+  pointer-events: none;
+  display: none;
+}
+
+.gradient-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(255, 107, 157, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(255, 228, 160, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(30, 15, 53, 0.4) 0%, transparent 70%);
+}
+
+/* ============================================================
+   音乐控制
+   ============================================================ */
+#music-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 200;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 194, 212, 0.3);
+  background: rgba(20, 10, 40, 0.6);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+#music-toggle.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+#music-toggle:hover {
+  border-color: var(--rose-light);
+  background: rgba(255, 107, 157, 0.15);
+  transform: scale(1.08);
+}
+#music-toggle svg {
+  width: 20px;
+  height: 20px;
+  fill: var(--rose-pale);
+}
+.music-note {
+  animation: noteFloat 1.5s ease-in-out infinite;
+}
+@keyframes noteFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+/* ============================================================
+   视图容器
+   ============================================================ */
+.view {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+.view.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ============================================================
+   视图1：验证页
+   ============================================================ */
+.verify-container {
+  text-align: center;
+  max-width: 420px;
+  width: 100%;
+  animation: fadeInUp 1.2s ease forwards;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.verify-gift-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 28px;
+  position: relative;
+}
+.verify-gift-icon svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 20px rgba(255, 107, 157, 0.4));
+  animation: giftPulse 2.5s ease-in-out infinite;
+}
+@keyframes giftPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+.verify-title {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-warm);
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+.verify-subtitle {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 36px;
+  letter-spacing: 1px;
+  line-height: 1.8;
+}
+
+.verify-field {
+  margin-bottom: 20px;
+  text-align: left;
+}
+.verify-label {
+  display: block;
+  font-size: 13px;
+  color: var(--rose-pale);
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+.verify-input {
+  width: 100%;
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 194, 212, 0.25);
+  border-radius: 12px;
+  background: rgba(20, 10, 40, 0.6);
+  color: var(--text-warm);
+  font-size: 15px;
+  font-family: var(--sans);
+  outline: none;
+  transition: all 0.3s ease;
+  -webkit-appearance: none;
+}
+.verify-input:focus {
+  border-color: var(--rose);
+  box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.15);
+  background: rgba(30, 15, 53, 0.8);
+}
+.verify-input::placeholder {
+  color: var(--text-faint);
+}
+.verify-input[type="date"] {
+  color-scheme: dark;
+}
+.verify-input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8) sepia(1) saturate(5) hue-rotate(300deg);
+  cursor: pointer;
+}
+
+.verify-error {
+  color: #ff8a8a;
+  font-size: 13px;
+  margin-top: 6px;
+  min-height: 18px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.verify-error.show {
+  opacity: 1;
+}
+
+.verify-btn {
+  width: 100%;
+  padding: 16px;
+  margin-top: 12px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--rose) 0%, var(--rose-light) 100%);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--sans);
+  letter-spacing: 3px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 24px rgba(255, 107, 157, 0.35);
+}
+.verify-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(255, 107, 157, 0.5);
+}
+.verify-btn:active {
+  transform: translateY(0);
+}
+
+.verify-hint {
+  margin-top: 24px;
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 1px;
+}
+
+/* ============================================================
+   视图2：庆祝动画 + 开头字幕
+   ============================================================ */
+.celebration-content {
+  text-align: center;
+  max-width: 700px;
+  width: 100%;
+  z-index: 10;
+}
+
+.opening-quote {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 2.2;
+  color: var(--text-warm);
+  letter-spacing: 2px;
+  text-shadow: 0 0 30px rgba(255, 107, 157, 0.3);
+  min-height: 200px;
+}
+.opening-quote .char {
+  opacity: 0;
+  display: inline-block;
+  animation: charFadeIn 0.5s ease forwards;
+}
+@keyframes charFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.celebration-enter {
+  margin-top: 48px;
+  opacity: 0;
+  animation: fadeInUp 1s ease 2s forwards;
+}
+.celebration-enter-btn {
+  padding: 14px 48px;
+  border: 1px solid var(--rose-light);
+  border-radius: 50px;
+  background: rgba(255, 107, 157, 0.1);
+  color: var(--rose-pale);
+  font-size: 15px;
+  font-family: var(--sans);
+  letter-spacing: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+.celebration-enter-btn:hover {
+  background: rgba(255, 107, 157, 0.25);
+  border-color: var(--rose);
+  box-shadow: 0 0 30px rgba(255, 107, 157, 0.3);
+}
+
+/* ============================================================
+   视图3：回忆展示
+   ============================================================ */
+.memories-wrapper {
+  width: 100%;
+  max-width: 900px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+.memory-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 80px rgba(255, 107, 157, 0.1);
+  background: var(--bg-mid);
+}
+
+.memory-slide {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  opacity: 0;
+  transition: opacity 1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.memory-slide.active {
+  opacity: 1;
+}
+
+.memory-slide img,
+.memory-slide video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.memory-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  padding: 40px;
+}
+.memory-placeholder-icon {
+  width: 56px;
+  height: 56px;
+  opacity: 0.5;
+}
+.memory-placeholder-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: var(--rose-pale);
+  fill: none;
+  stroke-width: 1.2;
+}
+.memory-placeholder-text {
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+}
+.memory-placeholder-hint {
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 1px;
+}
+
+/* 不同占位的渐变背景 */
+.ph-1 { background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #1a0a2e 100%); }
+.ph-2 { background: linear-gradient(135deg, #2e0a1a 0%, #4e1b2d 50%, #2e0a1a 100%); }
+.ph-3 { background: linear-gradient(135deg, #0a1a2e 0%, #1b2d4e 50%, #0a1a2e 100%); }
+.ph-4 { background: linear-gradient(135deg, #2e2a0a 0%, #4e451b 50%, #2e2a0a 100%); }
+.ph-5 { background: linear-gradient(135deg, #1a2e0a 0%, #2d4e1b 50%, #1a2e0a 100%); }
+.ph-6 { background: linear-gradient(135deg, #2e0a2e 0%, #4e1b4e 50%, #2e0a2e 100%); }
+
+.memory-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 40px 32px 28px;
+  background: linear-gradient(transparent, rgba(10, 10, 26, 0.85));
+  z-index: 5;
+}
+.memory-caption-title {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-warm);
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+.memory-caption-desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.7;
+  letter-spacing: 0.5px;
+}
+.memory-caption-date {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  font-size: 12px;
+  color: var(--rose-pale);
+  letter-spacing: 2px;
+  opacity: 0.8;
+}
+
+/* 回忆导航 */
+.memory-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding: 0 8px;
+}
+.memory-arrow {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 194, 212, 0.25);
+  background: rgba(20, 10, 40, 0.6);
+  color: var(--rose-pale);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+.memory-arrow:hover {
+  border-color: var(--rose);
+  background: rgba(255, 107, 157, 0.15);
+  transform: scale(1.1);
+}
+.memory-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.memory-dots {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.memory-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 194, 212, 0.25);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.memory-dot.active {
+  background: var(--rose);
+  width: 24px;
+  border-radius: 4px;
+  box-shadow: 0 0 12px rgba(255, 107, 157, 0.5);
+}
+
+.memory-progress-text {
+  font-size: 13px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  min-width: 50px;
+  text-align: center;
+}
+
+.memory-finish-btn {
+  margin-top: 20px;
+  padding: 12px 36px;
+  border: 1px solid rgba(255, 194, 212, 0.3);
+  border-radius: 50px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-family: var(--sans);
+  letter-spacing: 3px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: center;
+}
+.memory-finish-btn:hover {
+  border-color: var(--rose-light);
+  color: var(--rose-pale);
+  background: rgba(255, 107, 157, 0.1);
+}
+
+/* ============================================================
+   视图4：结束告白 + 选择
+   ============================================================ */
+.ending-content {
+  text-align: center;
+  max-width: 680px;
+  width: 100%;
+}
+
+.ending-message {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 2.4;
+  color: var(--text-warm);
+  letter-spacing: 1.5px;
+  margin-bottom: 48px;
+  text-shadow: 0 0 40px rgba(255, 107, 157, 0.25);
+}
+.ending-message .highlight {
+  color: var(--rose-light);
+  font-weight: 700;
+}
+.ending-message .gold-text {
+  color: var(--gold);
+}
+
+.ending-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 380px;
+  margin: 0 auto;
+}
+.choice-btn {
+  padding: 18px 28px;
+  border: 1px solid rgba(255, 194, 212, 0.3);
+  border-radius: 14px;
+  background: rgba(20, 10, 40, 0.5);
+  color: var(--text-warm);
+  font-size: 16px;
+  font-family: var(--serif);
+  font-weight: 600;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.35s ease;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+.choice-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 157, 0.15), transparent);
+  transition: left 0.5s ease;
+}
+.choice-btn:hover::before {
+  left: 100%;
+}
+.choice-btn:hover {
+  border-color: var(--rose);
+  background: rgba(255, 107, 157, 0.12);
+  transform: translateX(6px);
+  box-shadow: 0 4px 24px rgba(255, 107, 157, 0.2);
+}
+.choice-btn .choice-label {
+  display: inline-block;
+  width: 28px;
+  color: var(--rose);
+  font-weight: 700;
+}
+
+/* ============================================================
+   视图5：最终页
+   ============================================================ */
+.final-content {
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+}
+
+.final-title {
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--text-warm);
+  letter-spacing: 3px;
+  margin-bottom: 20px;
+  line-height: 1.6;
+  text-shadow: 0 0 50px rgba(255, 107, 157, 0.4);
+  animation: finalGlow 3s ease-in-out infinite;
+}
+@keyframes finalGlow {
+  0%, 100% { text-shadow: 0 0 30px rgba(255, 107, 157, 0.3); }
+  50% { text-shadow: 0 0 60px rgba(255, 107, 157, 0.6), 0 0 100px rgba(255, 228, 160, 0.2); }
+}
+
+.final-subtitle {
+  font-size: 15px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  line-height: 2;
+  margin-bottom: 40px;
+}
+
+.final-heart {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 32px;
+  animation: heartBeat 1.2s ease-in-out infinite;
+}
+.final-heart svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 30px rgba(255, 107, 157, 0.6));
+}
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.15); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.1); }
+  60% { transform: scale(1); }
+}
+
+.final-signature {
+  font-family: var(--serif);
+  font-size: 14px;
+  color: var(--rose-pale);
+  letter-spacing: 4px;
+  margin-top: 24px;
+  opacity: 0.8;
+}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width: 768px) {
+  .verify-title { font-size: 24px; }
+  .opening-quote { font-size: 18px; line-height: 2; min-height: 160px; }
+  .ending-message { font-size: 17px; line-height: 2.2; }
+  .final-title { font-size: 26px; }
+  .memory-stage { aspect-ratio: 4 / 3; }
+  .memory-caption { padding: 32px 20px 20px; }
+  .memory-caption-title { font-size: 17px; }
+  .memory-caption-desc { font-size: 13px; }
+  .memory-arrow { width: 42px; height: 42px; font-size: 18px; }
+  .choice-btn { font-size: 15px; padding: 16px 22px; }
+  .view { padding: 30px 18px; }
+}
+
+@media (max-width: 480px) {
+  .opening-quote { font-size: 16px; }
+  .ending-message { font-size: 15px; line-height: 2.1; }
+  .final-title { font-size: 22px; }
+  .memory-dots { gap: 6px; }
+  .memory-dot.active { width: 18px; }
+}
+</style>
+</head>
+<body>
+
+<!-- 星光背景 -->
+<canvas id="starfield"></canvas>
+<div class="gradient-overlay"></div>
+
+<!-- 撒花/爱心粒子层 -->
+<canvas id="confetti-canvas"></canvas>
+
+<!-- 背景音乐（后续替换 src 为实际音频文件路径或 URL） -->
+<audio id="bg-music" loop preload="auto">
+  <source src="" type="audio/mpeg">
+</audio>
+
+<!-- 音乐控制按钮 -->
+<button id="music-toggle" title="背景音乐开关" aria-label="背景音乐开关">
+  <svg viewBox="0 0 24 24" id="music-icon-playing">
+    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+  </svg>
+</button>
+
+<!-- ============================================================
+     视图1：验证页
+     ============================================================ -->
+<section class="view active" data-route="verify" id="view-verify">
+  <div class="verify-container">
+    <div class="verify-gift-icon">
+      <svg viewBox="0 0 64 64" fill="none">
+        <rect x="8" y="24" width="48" height="32" rx="4" fill="url(#giftGrad)" stroke="#ff8fab" stroke-width="1.5"/>
+        <rect x="4" y="20" width="56" height="10" rx="3" fill="url(#giftGrad2)" stroke="#ff8fab" stroke-width="1.5"/>
+        <path d="M32 20 C32 10, 22 6, 22 14 C22 20, 32 20, 32 20 Z" fill="#ff6b9d" opacity="0.9"/>
+        <path d="M32 20 C32 10, 42 6, 42 14 C42 20, 32 20, 32 20 Z" fill="#ff8fab" opacity="0.9"/>
+        <line x1="32" y1="20" x2="32" y2="56" stroke="#ffc2d4" stroke-width="1.5" opacity="0.5"/>
+        <defs>
+          <linearGradient id="giftGrad" x1="8" y1="24" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ff6b9d"/>
+            <stop offset="100%" stop-color="#c44569"/>
+          </linearGradient>
+          <linearGradient id="giftGrad2" x1="4" y1="20" x2="60" y2="30" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ff8fab"/>
+            <stop offset="100%" stop-color="#ff6b9d"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <h1 class="verify-title">一份特别的礼物</h1>
+    <p class="verify-subtitle">只有你才能打开<br>请回答两个只有我们知道的日子</p>
+
+    <div class="verify-field">
+      <label class="verify-label" for="input-birthday">你的生日</label>
+      <input type="date" class="verify-input" id="input-birthday" placeholder="选择你的生日">
+    </div>
+
+    <div class="verify-field">
+      <label class="verify-label" for="input-anniversary">我们结识的日子</label>
+      <input type="date" class="verify-input" id="input-anniversary" placeholder="选择我们结识的日子">
+    </div>
+
+    <div class="verify-error" id="verify-error">日期不对哦，再想想看～</div>
+
+    <button class="verify-btn" id="verify-submit">拆 开 礼 物</button>
+    <p class="verify-hint">提示：答案藏在我们的故事里</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     视图2：庆祝动画 + 开头字幕
+     ============================================================ -->
+<section class="view" data-route="celebration" id="view-celebration">
+  <div class="celebration-content">
+    <div class="opening-quote" id="opening-quote"></div>
+    <div class="celebration-enter">
+      <button class="celebration-enter-btn" id="btn-enter-memories">进 入 回 忆</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     视图3：回忆展示
+     ============================================================ -->
+<section class="view" data-route="memories" id="view-memories">
+  <div class="memories-wrapper">
+    <div class="memory-stage" id="memory-stage">
+      <!-- 回忆幻灯片由 JS 动态生成 -->
+    </div>
+    <div class="memory-nav">
+      <button class="memory-arrow" id="memory-prev" aria-label="上一张">&#10094;</button>
+      <div class="memory-dots" id="memory-dots"></div>
+      <span class="memory-progress-text" id="memory-progress">1 / 6</span>
+      <button class="memory-arrow" id="memory-next" aria-label="下一张">&#10095;</button>
+    </div>
+    <button class="memory-finish-btn" id="memory-finish">看 完 了 ， 继 续</button>
+  </div>
+</section>
+
+<!-- ============================================================
+     视图4：结束告白 + 选择
+     ============================================================ -->
+<section class="view" data-route="ending" id="view-ending">
+  <div class="ending-content">
+    <p class="ending-message" id="ending-message">
+      以后每年的<span class="gold-text">10月29日</span>，<span class="highlight">Young.T</span>都在你的身边陪伴着你，<br>
+      无论是以肉体或是心灵传递的形式，一直守护着你！<br>
+      让我们在一起的每一天都变得<span class="highlight">"热恋"</span>！
+    </p>
+    <div class="ending-choices">
+      <button class="choice-btn" data-choice="A"><span class="choice-label">A.</span> Lily do</button>
+      <button class="choice-btn" data-choice="B"><span class="choice-label">B.</span> Lily absolutely do</button>
+      <button class="choice-btn" data-choice="C"><span class="choice-label">C.</span> Lily definitely do</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     视图5：最终页
+     ============================================================ -->
+<section class="view" data-route="final" id="view-final">
+  <div class="final-content">
+    <div class="final-heart">
+      <svg viewBox="0 0 64 64" fill="none">
+        <path d="M32 56 C32 56, 8 40, 8 22 C8 12, 16 6, 24 6 C28 6, 31 8, 32 10 C33 8, 36 6, 40 6 C48 6, 56 12, 56 22 C56 40, 32 56, 32 56 Z" fill="url(#heartGrad)"/>
+        <defs>
+          <linearGradient id="heartGrad" x1="8" y1="6" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ff8fab"/>
+            <stop offset="50%" stop-color="#ff6b9d"/>
+            <stop offset="100%" stop-color="#e0457a"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <h1 class="final-title">你将开启一段热恋<br>准备好了吗？</h1>
+    <p class="final-subtitle">从今天起，每一天都是我们的纪念日<br>愿我们的故事，永远写不完</p>
+    <p class="final-signature">— Young.T 永远爱 Lily —</p>
+  </div>
+</section>
+
+<script>
+/* ============================================================
+   配置区 —— 后续可修改
+   ============================================================ */
+const CONFIG = {
+  // 验证用的正确日期（格式：MM-DD，只比较月日，不比较年份）
+  correctBirthday: '10-29',
+  // 结识日期（格式：YYYY-MM-DD，完整比较）
+  correctAnniversary: '2024-09-05',
+  // 背景音乐文件路径（后续替换为实际音频，如 './music/bgm.mp3' 或远程URL）
+  musicSrc: '',
+  // 回忆自动播放间隔（毫秒），设为 0 则不自动播放
+  autoPlayInterval: 5000
+};
+
+/* 回忆数据 —— 后续替换为实际图片/视频
+   type: 'image' | 'video'
+   src:  文件路径或URL（占位时留空字符串即可显示占位图）
+   title: 标题
+   desc:  描述文字
+   date:  日期标签
+*/
+const MEMORIES = [
+  { type: 'image', src: '', title: '初次相遇', desc: '那一天，人群中你一眼就看到了我，而我，刚好也在看你。', date: '2024.09.05', phClass: 'ph-1' },
+  { type: 'video', src: '', title: '第一次约会', desc: '紧张得手心出汗，却还是忍不住想牵你的手。', date: '2024.09.xx', phClass: 'ph-2' },
+  { type: 'image', src: '', title: '秋日漫步', desc: '落叶铺满了整条街，你说这是你见过最美的秋天。', date: '2024.10.xx', phClass: 'ph-3' },
+  { type: 'video', src: '', title: '第一次旅行', desc: '陌生的城市，因为有你在身边，哪里都是家。', date: '2024.11.xx', phClass: 'ph-4' },
+  { type: 'image', src: '', title: '跨年夜', desc: '倒计时的钟声里，我偷偷许下了一个关于你的愿望。', date: '2024.12.31', phClass: 'ph-5' },
+  { type: 'video', src: '', title: '两周年', desc: '七百多个日夜，每一天都因为你而闪闪发光。', date: '2026.09.05', phClass: 'ph-6' }
+];
+
+/* ============================================================
+   状态管理
+   ============================================================ */
+const state = {
+  currentRoute: 'verify',
+  memoryIndex: 0,
+  autoPlayTimer: null,
+  musicPlaying: false,
+  confettiActive: false
+};
+
+/* ============================================================
+   路由
+   ============================================================ */
+function navigate(route) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const target = document.querySelector('.view[data-route="' + route + '"]');
+  if (target) {
+    target.classList.add('active');
+    state.currentRoute = route;
+    onRouteChange(route);
+  }
+}
+
+function onRouteChange(route) {
+  if (route === 'celebration') {
+    startConfetti();
+    typeOpeningQuote();
+  } else if (route === 'memories') {
+    stopConfetti();
+    renderMemories();
+    startAutoPlay();
+  } else if (route === 'ending') {
+    stopAutoPlay();
+    stopConfetti();
+  } else if (route === 'final') {
+    startConfetti();
+  } else if (route === 'verify') {
+    stopConfetti();
+    stopAutoPlay();
+  }
+}
+
+/* ============================================================
+   星光背景
+   ============================================================ */
+(function initStarfield() {
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  let w, h;
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const starCount = Math.min(200, Math.floor(window.innerWidth * window.innerHeight / 8000));
+  for (let i = 0; i < starCount; i++) {
+    stars.push({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      r: Math.random() * 1.5 + 0.3,
+      baseAlpha: Math.random() * 0.6 + 0.2,
+      phase: Math.random() * Math.PI * 2,
+      speed: Math.random() * 0.02 + 0.005,
+      drift: (Math.random() - 0.5) * 0.15
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, w, h);
+    for (let i = 0; i < stars.length; i++) {
+      const s = stars[i];
+      s.phase += s.speed;
+      s.x += s.drift;
+      if (s.x < 0) s.x = w;
+      if (s.x > w) s.x = 0;
+      const alpha = s.baseAlpha * (0.5 + 0.5 * Math.sin(s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255, 245, 245, ' + alpha + ')';
+      ctx.fill();
+      // 大星星加光晕
+      if (s.r > 1.2) {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r * 3, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 228, 160, ' + (alpha * 0.08) + ')';
+        ctx.fill();
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+
+/* ============================================================
+   撒花 / 爱心粒子系统
+   ============================================================ */
+const confetti = (function() {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let w, h;
+  let running = false;
+  let animId = null;
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const colors = ['#ff6b9d', '#ff8fab', '#ffc2d4', '#ffe4a0', '#fff3d6', '#ff4d8d', '#ffa0c0'];
+
+  function createParticle(x, y, isBurst) {
+    const isHeart = Math.random() > 0.4;
+    return {
+      x: x !== undefined ? x : Math.random() * w,
+      y: y !== undefined ? y : -20,
+      vx: isBurst ? (Math.random() - 0.5) * 12 : (Math.random() - 0.5) * 2,
+      vy: isBurst ? -Math.random() * 15 - 5 : Math.random() * 2 + 1,
+      size: isHeart ? Math.random() * 14 + 8 : Math.random() * 8 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.1,
+      isHeart: isHeart,
+      life: 1,
+      decay: isBurst ? 0.003 : 0.001,
+      gravity: isBurst ? 0.25 : 0.05,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: Math.random() * 0.05 + 0.02
+    };
+  }
+
+  function drawHeart(x, y, size, color, rotation) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.scale(size / 30, size / 30);
+    ctx.beginPath();
+    ctx.moveTo(0, 8);
+    ctx.bezierCurveTo(-14, -4, -14, -18, 0, -8);
+    ctx.bezierCurveTo(14, -18, 14, -4, 0, 8);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawPetal(x, y, size, color, rotation) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, size, size * 0.5, 0, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.85;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function update() {
+    ctx.clearRect(0, 0, w, h);
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.wobble += p.wobbleSpeed;
+      p.x += p.vx + Math.sin(p.wobble) * 0.8;
+      p.y += p.vy;
+      p.vy += p.gravity;
+      p.rotation += p.rotSpeed;
+      p.life -= p.decay;
+
+      if (p.life <= 0 || p.y > h + 50) {
+        particles.splice(i, 1);
+        continue;
+      }
+
+      ctx.globalAlpha = Math.min(1, p.life * 2);
+      if (p.isHeart) {
+        drawHeart(p.x, p.y, p.size, p.color, p.rotation);
+      } else {
+        drawPetal(p.x, p.y, p.size, p.color, p.rotation);
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    if (running || particles.length > 0) {
+      animId = requestAnimationFrame(update);
+    } else {
+      canvas.style.display = 'none';
+    }
+  }
+
+  return {
+    start: function() {
+      if (running) return;
+      running = true;
+      canvas.style.display = 'block';
+      // 持续飘落的粒子
+      const spawner = setInterval(function() {
+        if (!running) { clearInterval(spawner); return; }
+        for (let i = 0; i < 3; i++) {
+          particles.push(createParticle());
+        }
+      }, 100);
+      update();
+    },
+    burst: function() {
+      canvas.style.display = 'block';
+      const cx = w / 2;
+      const cy = h / 2;
+      for (let i = 0; i < 80; i++) {
+        particles.push(createParticle(cx, cy, true));
+      }
+      if (!animId) update();
+    },
+    stop: function() {
+      running = false;
+    }
+  };
+})();
+
+function startConfetti() {
+  state.confettiActive = true;
+  confetti.start();
+  // 触发一次爆发
+  setTimeout(function() { confetti.burst(); }, 300);
+}
+function stopConfetti() {
+  state.confettiActive = false;
+  confetti.stop();
+}
+
+/* ============================================================
+   验证逻辑
+   ============================================================ */
+document.getElementById('verify-submit').addEventListener('click', function() {
+  const birthdayInput = document.getElementById('input-birthday').value;
+  const anniversaryInput = document.getElementById('input-anniversary').value;
+  const errorEl = document.getElementById('verify-error');
+
+  if (!birthdayInput || !anniversaryInput) {
+    errorEl.textContent = '两个日期都要填写哦～';
+    errorEl.classList.add('show');
+    return;
+  }
+
+  // 生日只比较 MM-DD
+  const birthdayMMDD = birthdayInput.slice(5);
+  const anniversaryValid = anniversaryInput === CONFIG.correctAnniversary;
+  const birthdayValid = birthdayMMDD === CONFIG.correctBirthday;
+
+  if (birthdayValid && anniversaryValid) {
+    errorEl.classList.remove('show');
+    // 播放音乐（用户交互后触发，符合浏览器策略）
+    playMusic();
+    // 切换到庆祝页
+    navigate('celebration');
+  } else {
+    errorEl.textContent = '日期不对哦，再想想看～';
+    errorEl.classList.add('show');
+    // 抖动效果
+    const container = document.querySelector('.verify-container');
+    container.style.animation = 'none';
+    container.offsetHeight; // 触发重排
+    container.style.animation = 'shake 0.4s ease';
+  }
+});
+
+// 输入时清除错误
+document.getElementById('input-birthday').addEventListener('input', function() {
+  document.getElementById('verify-error').classList.remove('show');
+});
+document.getElementById('input-anniversary').addEventListener('input', function() {
+  document.getElementById('verify-error').classList.remove('show');
+});
+
+// 添加抖动动画
+const shakeStyle = document.createElement('style');
+shakeStyle.textContent = '@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }';
+document.head.appendChild(shakeStyle);
+
+/* ============================================================
+   开头字幕打字机效果
+   ============================================================ */
+const OPENING_TEXT = '拆开这份礼物，你会看到我收集了两整年的光——因为遇见你之后，每一天都阳光灿烂，所以不再惧怕黑暗';
+
+function typeOpeningQuote() {
+  const el = document.getElementById('opening-quote');
+  el.innerHTML = '';
+  let i = 0;
+  function typeNext() {
+    if (i >= OPENING_TEXT.length) return;
+    const char = OPENING_TEXT[i];
+    const span = document.createElement('span');
+    span.className = 'char';
+    span.textContent = char === ' ' ? '\u00A0' : char;
+    span.style.animationDelay = (i * 0.08) + 's';
+    el.appendChild(span);
+    i++;
+    setTimeout(typeNext, 80);
+  }
+  typeNext();
+}
+
+/* 进入回忆按钮 */
+document.getElementById('btn-enter-memories').addEventListener('click', function() {
+  navigate('memories');
+});
+
+/* ============================================================
+   回忆展示
+   ============================================================ */
+function renderMemories() {
+  const stage = document.getElementById('memory-stage');
+  const dotsContainer = document.getElementById('memory-dots');
+  stage.innerHTML = '';
+  dotsContainer.innerHTML = '';
+
+  MEMORIES.forEach(function(mem, idx) {
+    // 幻灯片
+    const slide = document.createElement('div');
+    slide.className = 'memory-slide' + (idx === 0 ? ' active' : '');
+    slide.dataset.index = idx;
+
+    if (mem.src) {
+      if (mem.type === 'image') {
+        const img = document.createElement('img');
+        img.src = mem.src;
+        img.alt = mem.title;
+        slide.appendChild(img);
+      } else if (mem.type === 'video') {
+        const video = document.createElement('video');
+        video.src = mem.src;
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.autoplay = true;
+        slide.appendChild(video);
+      }
+    } else {
+      // 占位
+      const ph = document.createElement('div');
+      ph.className = 'memory-placeholder ' + (mem.phClass || 'ph-1');
+      const iconSvg = mem.type === 'video'
+        ? '<svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>'
+        : '<svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
+      ph.innerHTML =
+        '<div class="memory-placeholder-icon">' + iconSvg + '</div>' +
+        '<div class="memory-placeholder-text">' + mem.title + '</div>' +
+        '<div class="memory-placeholder-hint">（此处将插入' + (mem.type === 'video' ? '视频' : '照片') + '）</div>';
+      slide.appendChild(ph);
+    }
+
+    // 文字说明
+    const caption = document.createElement('div');
+    caption.className = 'memory-caption';
+    caption.innerHTML =
+      '<span class="memory-caption-date">' + mem.date + '</span>' +
+      '<div class="memory-caption-title">' + mem.title + '</div>' +
+      '<div class="memory-caption-desc">' + mem.desc + '</div>';
+    slide.appendChild(caption);
+
+    stage.appendChild(slide);
+
+    // 指示点
+    const dot = document.createElement('div');
+    dot.className = 'memory-dot' + (idx === 0 ? ' active' : '');
+    dot.dataset.index = idx;
+    dot.addEventListener('click', function() {
+      goToMemory(idx);
+    });
+    dotsContainer.appendChild(dot);
+  });
+
+  updateMemoryUI();
+}
+
+function goToMemory(idx) {
+  if (idx < 0 || idx >= MEMORIES.length) return;
+  state.memoryIndex = idx;
+  document.querySelectorAll('.memory-slide').forEach(function(s, i) {
+    s.classList.toggle('active', i === idx);
+    // 视频自动播放控制
+    const video = s.querySelector('video');
+    if (video) {
+      if (i === idx) { video.play().catch(function(){}); }
+      else { video.pause(); }
+    }
+  });
+  document.querySelectorAll('.memory-dot').forEach(function(d, i) {
+    d.classList.toggle('active', i === idx);
+  });
+  updateMemoryUI();
+  resetAutoPlay();
+}
+
+function updateMemoryUI() {
+  document.getElementById('memory-progress').textContent = (state.memoryIndex + 1) + ' / ' + MEMORIES.length;
+  document.getElementById('memory-prev').disabled = state.memoryIndex === 0;
+  document.getElementById('memory-next').disabled = state.memoryIndex === MEMORIES.length - 1;
+}
+
+document.getElementById('memory-prev').addEventListener('click', function() {
+  goToMemory(state.memoryIndex - 1);
+});
+document.getElementById('memory-next').addEventListener('click', function() {
+  goToMemory(state.memoryIndex + 1);
+});
+document.getElementById('memory-finish').addEventListener('click', function() {
+  navigate('ending');
+});
+
+/* 自动播放 */
+function startAutoPlay() {
+  if (CONFIG.autoPlayInterval > 0) {
+    resetAutoPlay();
+  }
+}
+function resetAutoPlay() {
+  if (state.autoPlayTimer) clearInterval(state.autoPlayTimer);
+  if (CONFIG.autoPlayInterval > 0) {
+    state.autoPlayTimer = setInterval(function() {
+      const next = state.memoryIndex + 1;
+      if (next >= MEMORIES.length) {
+        stopAutoPlay();
+      } else {
+        goToMemory(next);
+      }
+    }, CONFIG.autoPlayInterval);
+  }
+}
+function stopAutoPlay() {
+  if (state.autoPlayTimer) {
+    clearInterval(state.autoPlayTimer);
+    state.autoPlayTimer = null;
+  }
+}
+
+/* ============================================================
+   结束页选择
+   ============================================================ */
+document.querySelectorAll('.choice-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    const choice = this.dataset.choice;
+    // 无论选哪个，都进入最终页（三个选项都是肯定的）
+    navigate('final');
+  });
+});
+
+/* ============================================================
+   音乐控制
+   ============================================================ */
+const bgMusic = document.getElementById('bg-music');
+const musicToggle = document.getElementById('music-toggle');
+
+function playMusic() {
+  if (CONFIG.musicSrc) {
+    bgMusic.src = CONFIG.musicSrc;
+    bgMusic.play().then(function() {
+      state.musicPlaying = true;
+      musicToggle.classList.add('visible');
+      updateMusicIcon();
+    }).catch(function() {
+      // 自动播放被阻止，显示按钮让用户手动开启
+      musicToggle.classList.add('visible');
+    });
+  } else {
+    // 没有配置音乐，仍显示按钮（提示用户后续添加）
+    musicToggle.classList.add('visible');
+  }
+}
+
+function updateMusicIcon() {
+  const icon = document.getElementById('music-icon-playing');
+  if (state.musicPlaying) {
+    icon.innerHTML = '<path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>';
+    icon.classList.add('music-note');
+  } else {
+    icon.innerHTML = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
+    icon.classList.remove('music-note');
+  }
+}
+
+musicToggle.addEventListener('click', function() {
+  if (!CONFIG.musicSrc) {
+    // 提示用户添加音乐
+    alert('背景音乐尚未配置，请在代码 CONFIG.musicSrc 中填入音频文件路径');
+    return;
+  }
+  if (state.musicPlaying) {
+    bgMusic.pause();
+    state.musicPlaying = false;
+  } else {
+    bgMusic.play().catch(function(){});
+    state.musicPlaying = true;
+  }
+  updateMusicIcon();
+});
+
+/* ============================================================
+   键盘导航（回忆页）
+   ============================================================ */
+document.addEventListener('keydown', function(e) {
+  if (state.currentRoute === 'memories') {
+    if (e.key === 'ArrowLeft') goToMemory(state.memoryIndex - 1);
+    if (e.key === 'ArrowRight') goToMemory(state.memoryIndex + 1);
+  }
+});
+
+/* ============================================================
+   初始化
+   ============================================================ */
+// 页面加载完成后默认显示验证页
+document.addEventListener('DOMContentLoaded', function() {
+  navigate('verify');
+});
+</script>
+</body>
+</html>
