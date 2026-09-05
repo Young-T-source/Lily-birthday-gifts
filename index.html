@@ -7,19 +7,19 @@
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
 <style>
 :root{
-  --bg-deep:#050510;--bg-mid:#0a0a20;--rose:#ff6b9d;--rose-light:#ff8fab;--rose-pale:#ffc2d4;
-  --gold:#ffd700;--gold-soft:#ffe4a0;--text-warm:#fff5f5;--text-dim:rgba(255,245,245,0.6);--text-faint:rgba(255,245,245,0.35);
+  --bg-deep:#06061a;--bg-mid:#0e0e2e;--rose:#ff6b9d;--rose-light:#ff8fab;--rose-pale:#ffc2d4;
+  --gold:#ffd700;--gold-soft:#ffe4a0;--text-warm:#fff5f5;--text-dim:rgba(255,245,245,0.65);--text-faint:rgba(255,245,245,0.4);
   --serif:'Noto Serif SC','Songti SC','SimSun',serif;--sans:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-deep);color:var(--text-warm);font-family:var(--sans);-webkit-font-smoothing:antialiased}
 
-/* ===== 3D环绕星空背景 ===== */
-#starfield-3d{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+/* ===== 星空背景 ===== */
+#galaxy-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
 #confetti-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:100;pointer-events:none;display:none}
 
 /* ===== 音乐控制 ===== */
-#music-toggle{position:fixed;top:20px;right:20px;z-index:200;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,194,212,0.3);background:rgba(10,10,32,0.6);backdrop-filter:blur(8px);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;opacity:0;pointer-events:none}
+#music-toggle{position:fixed;top:20px;right:20px;z-index:200;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,194,212,0.3);background:rgba(14,14,46,0.6);backdrop-filter:blur(8px);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;opacity:0;pointer-events:none}
 #music-toggle.visible{opacity:1;pointer-events:auto}
 #music-toggle:hover{border-color:var(--rose-light);background:rgba(255,107,157,0.15);transform:scale(1.08)}
 #music-toggle svg{width:20px;height:20px;fill:var(--rose-pale)}
@@ -28,59 +28,40 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-deep);color
 .view{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;opacity:0;visibility:hidden;transition:opacity .8s ease,visibility .8s ease}
 .view.active{opacity:1;visibility:visible}
 
-/* ===== 小熊猫3D场景 ===== */
-.panda-scene{position:relative;width:100%;max-width:560px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;perspective:1400px}
-.stage-3d{position:relative;width:360px;height:420px;transform-style:preserve-3d;margin-bottom:8px}
-/* 虚拟屏幕框架（小熊猫从这里跳出） */
-.screen-frame{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) translateZ(-120px);width:320px;height:240px;border:2px solid rgba(255,194,212,0.2);border-radius:14px;background:rgba(10,10,32,0.25);backdrop-filter:blur(2px);box-shadow:0 0 80px rgba(255,107,157,0.08),inset 0 0 50px rgba(100,150,255,0.05)}
-.screen-frame::before{content:'';position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:70px;height:5px;background:rgba(255,194,212,0.25);border-radius:3px}
-.screen-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:280px;height:200px;border-radius:50%;background:radial-gradient(ellipse,rgba(100,180,255,0.12) 0%,transparent 70%);animation:screenGlow 3s ease-in-out infinite;pointer-events:none}
-@keyframes screenGlow{0%,100%{opacity:0.5;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}}
+/* ===== 角色3D场景 ===== */
+.char-scene{position:relative;width:100%;max-width:560px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;perspective:1600px}
+.stage-3d{position:relative;width:340px;height:460px;transform-style:preserve-3d;margin-bottom:6px}
+/* 虚拟屏幕框架 */
+.screen-frame{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) translateZ(-160px);width:300px;height:380px;border:2px solid rgba(180,200,255,0.2);border-radius:16px;background:rgba(14,14,46,0.2);backdrop-filter:blur(2px);box-shadow:0 0 100px rgba(100,150,255,0.1),inset 0 0 60px rgba(150,180,255,0.06)}
+.screen-frame::before{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:80px;height:5px;background:rgba(180,200,255,0.2);border-radius:3px}
+.screen-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:260px;height:340px;border-radius:50%;background:radial-gradient(ellipse,rgba(150,180,255,0.15) 0%,transparent 70%);animation:screenGlow 3s ease-in-out infinite;pointer-events:none}
+@keyframes screenGlow{0%,100%{opacity:0.5;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}}
 
-/* 小熊猫SVG容器 */
-.panda-svg-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) translateZ(0px);width:280px;height:360px;transition:transform 1.4s cubic-bezier(0.34,1.56,0.64,1);transform-style:preserve-3d}
-.panda-svg-wrap.jumped{transform:translate(-50%,-50%) translateZ(180px) scale(1.15)}
-.panda-svg-wrap svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 25px 50px rgba(0,0,0,0.6)) drop-shadow(0 0 40px rgba(255,107,157,0.15))}
-
-/* 小熊猫各部分动画 */
-.panda-body-group{transform-origin:center bottom;animation:breathe 3s ease-in-out infinite}
-@keyframes breathe{0%,100%{transform:scaleY(1) scaleX(1)}50%{transform:scaleY(1.03) scaleX(0.98)}}
-.panda-head-group{transform-origin:center bottom;animation:headBob 4s ease-in-out infinite}
-@keyframes headBob{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}
-.panda-eye{transform-origin:center;transform-box:fill-box;animation:blink 4.5s ease-in-out infinite}
-@keyframes blink{0%,45%,55%,100%{transform:scaleY(1)}50%{transform:scaleY(0.05)}}
-/* 四足行走动画 */
-.panda-leg-fl{transform-origin:top center;transform-box:fill-box;animation:legFL 0.8s ease-in-out infinite}
-.panda-leg-fr{transform-origin:top center;transform-box:fill-box;animation:legFR 0.8s ease-in-out infinite}
-.panda-leg-bl{transform-origin:top center;transform-box:fill-box;animation:legBL 0.8s ease-in-out infinite}
-.panda-leg-br{transform-origin:top center;transform-box:fill-box;animation:legBR 0.8s ease-in-out infinite}
-@keyframes legFL{0%,100%{transform:rotate(0deg)}25%{transform:rotate(25deg)}50%{transform:rotate(0deg)}75%{transform:rotate(-10deg)}}
-@keyframes legFR{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-10deg)}50%{transform:rotate(0deg)}75%{transform:rotate(25deg)}}
-@keyframes legBL{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-15deg)}50%{transform:rotate(0deg)}75%{transform:rotate(20deg)}}
-@keyframes legBR{0%,100%{transform:rotate(0deg)}25%{transform:rotate(20deg)}50%{transform:rotate(0deg)}75%{transform:rotate(-15deg)}}
-/* 跳跃时收起四足 */
-.panda-svg-wrap.jumping .panda-leg-fl,.panda-svg-wrap.jumping .panda-leg-fr{transform:rotate(35deg)!important;animation:none}
-.panda-svg-wrap.jumping .panda-leg-bl,.panda-svg-wrap.jumping .panda-leg-br{transform:rotate(-25deg)!important;animation:none}
-/* 尾巴摇摆 */
-.panda-tail{transform-origin:left center;transform-box:fill-box;animation:tailWag 1.5s ease-in-out infinite}
-@keyframes tailWag{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(15deg)}}
-
-/* 小熊猫光晕 */
-.panda-aura{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(255,107,157,0.1) 0%,rgba(100,180,255,0.05) 40%,transparent 70%);animation:auraPulse 3.5s ease-in-out infinite;pointer-events:none}
-@keyframes auraPulse{0%,100%{opacity:0.6;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}}
+/* 角色图片 */
+.char-img-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) translateZ(0px);width:260px;height:420px;transition:transform 1.5s cubic-bezier(0.34,1.56,0.64,1);transform-style:preserve-3d}
+.char-img-wrap.jumped{transform:translate(-50%,-50%) translateZ(220px) scale(1.18)}
+.char-img-wrap img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 30px 60px rgba(0,0,0,0.6)) drop-shadow(0 0 50px rgba(180,150,255,0.2))}
+/* 悬浮动画 */
+.char-img-wrap.idle-float{animation:charFloat 4s ease-in-out infinite}
+.char-img-wrap.jumped.idle-float{animation:charFloatJump 4s ease-in-out infinite}
+@keyframes charFloat{0%,100%{transform:translate(-50%,-50%) translateY(0) rotateY(0deg)}50%{transform:translate(-50%,-50%) translateY(-14px) rotateY(2deg)}}
+@keyframes charFloatJump{0%,100%{transform:translate(-50%,-50%) translateZ(220px) scale(1.18) translateY(0) rotateY(0deg)}50%{transform:translate(-50%,-50%) translateZ(220px) scale(1.18) translateY(-18px) rotateY(3deg)}}
+/* 角色光晕 */
+.char-aura{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:360px;height:460px;border-radius:50%;background:radial-gradient(ellipse,rgba(200,170,255,0.12) 0%,rgba(255,150,200,0.06) 40%,transparent 70%);animation:auraPulse 3.5s ease-in-out infinite;pointer-events:none}
+@keyframes auraPulse{0%,100%{opacity:0.6;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}}
 
 /* 钥匙 */
-.key-wrap{position:absolute;right:-5px;bottom:28%;width:65px;height:95px;opacity:0;transform:scale(0) rotate(-20deg);transition:all .6s cubic-bezier(0.34,1.56,0.64,1);cursor:pointer;z-index:10}
+.key-wrap{position:absolute;right:0px;bottom:22%;width:60px;height:90px;opacity:0;transform:scale(0) rotate(-20deg);transition:all .6s cubic-bezier(0.34,1.56,0.64,1);cursor:pointer;z-index:10}
 .key-wrap.show{opacity:1;transform:scale(1) rotate(0deg);animation:keyShine 1.5s ease-in-out infinite}
-@keyframes keyShine{0%,100%{filter:drop-shadow(0 0 10px rgba(255,215,0,0.6))}50%{filter:drop-shadow(0 0 25px rgba(255,215,0,0.9))}}
+@keyframes keyShine{0%,100%{filter:drop-shadow(0 0 10px rgba(255,215,0,0.6))}50%{filter:drop-shadow(0 0 28px rgba(255,215,0,0.95))}}
 .key-wrap svg{width:100%;height:100%}
-.key-hint{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--gold-soft);white-space:nowrap;letter-spacing:1px;animation:hintBlink 1.5s ease-in-out infinite}
+.key-hint{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--gold-soft);white-space:nowrap;letter-spacing:1px;animation:hintBlink 1.5s ease-in-out infinite}
 @keyframes hintBlink{0%,100%{opacity:0.4}50%{opacity:1}}
 
 /* ===== 对话框 ===== */
-.dialog-box{position:relative;max-width:380px;width:100%;background:rgba(10,10,32,0.9);border:1px solid rgba(255,194,212,0.3);border-radius:20px;padding:20px 24px;backdrop-filter:blur(12px);margin-top:6px;box-shadow:0 8px 40px rgba(255,107,157,0.15);opacity:0;transform:translateY(20px);transition:all .5s ease}
+.dialog-box{position:relative;max-width:380px;width:100%;background:rgba(14,14,46,0.92);border:1px solid rgba(200,180,255,0.3);border-radius:20px;padding:20px 24px;backdrop-filter:blur(14px);margin-top:4px;box-shadow:0 8px 50px rgba(150,100,255,0.2);opacity:0;transform:translateY(20px);transition:all .5s ease}
 .dialog-box.show{opacity:1;transform:translateY(0)}
-.dialog-box::before{content:'';position:absolute;top:-9px;left:50%;transform:translateX(-50%) rotate(45deg);width:16px;height:16px;background:rgba(10,10,32,0.9);border-left:1px solid rgba(255,194,212,0.3);border-top:1px solid rgba(255,194,212,0.3)}
+.dialog-box::before{content:'';position:absolute;top:-9px;left:50%;transform:translateX(-50%) rotate(45deg);width:16px;height:16px;background:rgba(14,14,46,0.92);border-left:1px solid rgba(200,180,255,0.3);border-top:1px solid rgba(200,180,255,0.3)}
 .dialog-text{font-family:var(--serif);font-size:15px;line-height:2;color:var(--text-warm);letter-spacing:1px;min-height:45px}
 .dialog-text .char{opacity:0;display:inline-block;animation:charFade .3s ease forwards}
 @keyframes charFade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
@@ -98,7 +79,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-deep);color
 .quiz-progress{font-size:12px;color:var(--rose-pale);letter-spacing:2px;margin-bottom:12px;opacity:0.8}
 .quiz-question{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--text-warm);line-height:1.8;margin-bottom:24px;letter-spacing:1px;min-height:65px}
 .quiz-options{display:flex;flex-direction:column;gap:11px}
-.quiz-option{padding:14px 20px;border:1px solid rgba(255,194,212,0.25);border-radius:14px;background:rgba(10,10,32,0.6);color:var(--text-warm);font-size:14px;font-family:var(--serif);font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .3s;text-align:left;position:relative;overflow:hidden}
+.quiz-option{padding:14px 20px;border:1px solid rgba(255,194,212,0.25);border-radius:14px;background:rgba(14,14,46,0.6);color:var(--text-warm);font-size:14px;font-family:var(--serif);font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .3s;text-align:left;position:relative;overflow:hidden}
 .quiz-option:hover{border-color:var(--rose);background:rgba(255,107,157,0.12);transform:translateX(6px)}
 .quiz-option.correct{border-color:#4ade80;background:rgba(74,222,128,0.15);color:#86efac}
 .quiz-option.wrong{border-color:#f87171;background:rgba(248,113,113,0.15);color:#fca5a5;animation:shake .4s ease}
@@ -107,9 +88,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-deep);color
 .quiz-feedback{margin-top:18px;font-size:13px;min-height:20px;font-family:var(--serif);letter-spacing:1px;transition:all .3s}
 .quiz-feedback.success{color:#86efac}
 .quiz-feedback.error{color:#fca5a5}
-.quiz-mini-panda{margin:0 auto 14px;width:90px;height:115px;opacity:0;transform:scale(0);transition:all .5s}
-.quiz-mini-panda.show{opacity:1;transform:scale(1)}
-.quiz-mini-panda svg{width:100%;height:100%;overflow:visible}
+.quiz-mini-char{margin:0 auto 14px;width:80px;height:130px;opacity:0;transform:scale(0);transition:all .5s}
+.quiz-mini-char.show{opacity:1;transform:scale(1)}
+.quiz-mini-char img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.4))}
 
 /* ===== 回忆展示 ===== */
 .memories-wrapper{width:100%;max-width:880px;height:100%;display:flex;flex-direction:column;justify-content:center;position:relative}
@@ -125,12 +106,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-deep);color
 .ph-1{background:linear-gradient(135deg,#1a0a2e,#2d1b4e,#1a0a2e)}.ph-2{background:linear-gradient(135deg,#2e0a1a,#4e1b2d,#2e0a1a)}
 .ph-3{background:linear-gradient(135deg,#0a1a2e,#1b2d4e,#0a1a2e)}.ph-4{background:linear-gradient(135deg,#2e2a0a,#4e451b,#2e2a0a)}
 .ph-5{background:linear-gradient(135deg,#1a2e0a,#2d4e1b,#1a2e0a)}.ph-6{background:linear-gradient(135deg,#2e0a2e,#4e1b4e,#2e0a2e)}
-.memory-caption{position:absolute;bottom:0;left:0;right:0;padding:32px 24px 20px;background:linear-gradient(transparent,rgba(5,5,16,0.9));z-index:5}
+.memory-caption{position:absolute;bottom:0;left:0;right:0;padding:32px 24px 20px;background:linear-gradient(transparent,rgba(6,6,26,0.92));z-index:5}
 .memory-caption-title{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--text-warm);margin-bottom:4px;letter-spacing:1px}
 .memory-caption-desc{font-size:12px;color:var(--text-dim);line-height:1.7}
 .memory-caption-date{position:absolute;top:16px;right:20px;font-size:10px;color:var(--rose-pale);letter-spacing:2px;opacity:0.8}
 .memory-nav{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding:0 6px}
-.memory-arrow{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,194,212,0.25);background:rgba(10,10,32,0.6);color:var(--rose-pale);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;flex-shrink:0}
+.memory-arrow{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,194,212,0.25);background:rgba(14,14,46,0.6);color:var(--rose-pale);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;flex-shrink:0}
 .memory-arrow:hover{border-color:var(--rose);background:rgba(255,107,157,0.15);transform:scale(1.1)}
 .memory-arrow:disabled{opacity:0.3;cursor:not-allowed;transform:none}
 .memory-dots{display:flex;gap:7px;align-items:center}
@@ -146,7 +127,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-deep);color
 .ending-message .highlight{color:var(--rose-light);font-weight:700}
 .ending-message .gold-text{color:var(--gold)}
 .ending-choices{display:flex;flex-direction:column;gap:13px;max-width:340px;margin:0 auto}
-.choice-btn{padding:15px 24px;border:1px solid rgba(255,194,212,0.3);border-radius:14px;background:rgba(10,10,32,0.5);color:var(--text-warm);font-size:14px;font-family:var(--serif);font-weight:600;letter-spacing:2px;cursor:pointer;transition:all .35s;text-align:left;position:relative;overflow:hidden}
+.choice-btn{padding:15px 24px;border:1px solid rgba(255,194,212,0.3);border-radius:14px;background:rgba(14,14,46,0.5);color:var(--text-warm);font-size:14px;font-family:var(--serif);font-weight:600;letter-spacing:2px;cursor:pointer;transition:all .35s;text-align:left;position:relative;overflow:hidden}
 .choice-btn:hover{border-color:var(--rose);background:rgba(255,107,157,0.12);transform:translateX(6px);box-shadow:0 4px 24px rgba(255,107,157,0.2)}
 .choice-btn .choice-label{display:inline-block;width:24px;color:var(--rose);font-weight:700}
 
@@ -162,9 +143,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-deep);color
 
 /* ===== 响应式 ===== */
 @media (max-width:768px){
-  .stage-3d{width:300px;height:360px}
-  .panda-svg-wrap{width:240px;height:310px}
-  .screen-frame{width:270px;height:200px}
+  .stage-3d{width:280px;height:400px}
+  .char-img-wrap{width:220px;height:360px}
+  .screen-frame{width:250px;height:320px}
   .dialog-box{max-width:340px;padding:18px 20px}
   .dialog-text{font-size:14px}
   .quiz-question{font-size:17px}
@@ -178,20 +159,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-deep);color
   .view{padding:20px 14px}
 }
 @media (max-width:480px){
-  .stage-3d{width:260px;height:320px}
-  .panda-svg-wrap{width:210px;height:270px}
+  .stage-3d{width:240px;height:360px}
+  .char-img-wrap{width:190px;height:320px}
   .dialog-text{font-size:13px;line-height:1.9}
   .quiz-question{font-size:15px}
   .ending-message{font-size:13px;line-height:2}
   .final-title{font-size:19px}
   .option-btn{padding:10px 28px;font-size:13px}
-  .key-wrap{width:52px;height:78px}
+  .key-wrap{width:50px;height:75px}
 }
 </style>
 </head>
 <body>
 
-<canvas id="starfield-3d"></canvas>
+<canvas id="galaxy-canvas"></canvas>
 <canvas id="confetti-canvas"></canvas>
 
 <audio id="bg-music" loop preload="auto"><source src="" type="audio/mpeg"></audio>
@@ -201,79 +182,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-deep);color
   <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
 </button>
 
-<!-- ===== 小熊猫SVG定义（复用） ===== -->
-<svg width="0" height="0" style="position:absolute">
-  <defs>
-    <symbol id="panda-full" viewBox="0 0 300 380">
-      <!-- 尾巴 -->
-      <ellipse class="panda-tail" cx="55" cy="230" rx="18" ry="14" fill="#fff"/>
-      <!-- 后腿 -->
-      <ellipse class="panda-leg-bl" cx="95" cy="320" rx="22" ry="35" fill="#fff"/>
-      <ellipse class="panda-leg-br" cx="205" cy="320" rx="22" ry="35" fill="#fff"/>
-      <ellipse cx="95" cy="348" rx="24" ry="12" fill="#f0f0f0"/>
-      <ellipse cx="205" cy="348" rx="24" ry="12" fill="#f0f0f0"/>
-      <!-- 身体（红色灯笼） -->
-      <g class="panda-body-group">
-        <ellipse cx="150" cy="240" rx="85" ry="80" fill="#d42828"/>
-        <path d="M75 200 Q70 240 75 280" stroke="#ffd700" stroke-width="2.5" fill="none" opacity="0.6"/>
-        <path d="M225 200 Q230 240 225 280" stroke="#ffd700" stroke-width="2.5" fill="none" opacity="0.6"/>
-        <text x="150" y="260" text-anchor="middle" fill="#ffd700" font-size="48" font-family="serif" font-weight="bold">福</text>
-        <!-- 金色项圈 -->
-        <ellipse cx="150" cy="168" rx="70" ry="10" fill="#ffd700"/>
-        <ellipse cx="150" cy="166" rx="70" ry="6" fill="#ffed4a" opacity="0.4"/>
-      </g>
-      <!-- 前腿 -->
-      <ellipse class="panda-leg-fl" cx="100" cy="290" rx="18" ry="32" fill="#fff"/>
-      <ellipse class="panda-leg-fr" cx="200" cy="290" rx="18" ry="32" fill="#fff"/>
-      <ellipse cx="100" cy="316" rx="20" ry="10" fill="#f0f0f0"/>
-      <ellipse cx="200" cy="316" rx="20" ry="10" fill="#f0f0f0"/>
-      <!-- 头部 -->
-      <g class="panda-head-group">
-        <!-- 耳朵 -->
-        <ellipse cx="85" cy="85" rx="22" ry="26" fill="#1a1a1a" transform="rotate(-20 85 85)"/>
-        <ellipse cx="215" cy="85" rx="22" ry="26" fill="#1a1a1a" transform="rotate(20 215 85)"/>
-        <ellipse cx="85" cy="88" rx="12" ry="14" fill="#333" transform="rotate(-20 85 88)"/>
-        <ellipse cx="215" cy="88" rx="12" ry="14" fill="#333" transform="rotate(20 215 88)"/>
-        <!-- 头 -->
-        <ellipse cx="150" cy="115" rx="82" ry="75" fill="#fff"/>
-        <ellipse cx="150" cy="115" rx="84" ry="77" fill="none" stroke="#fff" stroke-width="2" opacity="0.2"/>
-        <!-- 黑色眼圈 -->
-        <ellipse cx="112" cy="112" rx="26" ry="33" fill="#1a1a1a" transform="rotate(-10 112 112)"/>
-        <ellipse cx="188" cy="112" rx="26" ry="33" fill="#1a1a1a" transform="rotate(10 188 112)"/>
-        <!-- 眼睛（蓝绿色） -->
-        <g class="panda-eye">
-          <ellipse cx="112" cy="112" rx="13" ry="17" fill="#4a9d9d"/>
-          <circle cx="116" cy="106" r="4" fill="#fff"/>
-          <circle cx="108" cy="118" r="2" fill="#fff" opacity="0.5"/>
-        </g>
-        <g class="panda-eye" style="animation-delay:0.1s">
-          <ellipse cx="188" cy="112" rx="13" ry="17" fill="#4a9d9d"/>
-          <circle cx="192" cy="106" r="4" fill="#fff"/>
-          <circle cx="184" cy="118" r="2" fill="#fff" opacity="0.5"/>
-        </g>
-        <!-- 额头红点 -->
-        <circle cx="150" cy="58" r="7" fill="#d42828"/>
-        <circle cx="148" cy="56" r="2.5" fill="#ff6b6b" opacity="0.5"/>
-        <!-- 鼻子 -->
-        <ellipse cx="150" cy="140" rx="8" ry="5.5" fill="#1a1a1a"/>
-        <ellipse cx="147" cy="138" rx="2.5" ry="1.5" fill="#444" opacity="0.4"/>
-        <!-- 嘴巴 -->
-        <path d="M130 150 Q150 168 170 150" stroke="#1a1a1a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <ellipse cx="150" cy="162" rx="8" ry="6" fill="#e8505b"/>
-      </g>
-    </symbol>
-  </defs>
-</svg>
-
-<!-- ===== 视图1：小熊猫3D场景 ===== -->
+<!-- ===== 视图1：角色3D场景 ===== -->
 <section class="view active" data-route="panda" id="view-panda">
-  <div class="panda-scene">
+  <div class="char-scene">
     <div class="stage-3d">
-      <div class="panda-aura"></div>
+      <div class="char-aura"></div>
       <div class="screen-glow"></div>
       <div class="screen-frame"></div>
-      <div class="panda-svg-wrap" id="panda-wrap">
-        <svg><use href="#panda-full"/></svg>
+      <div class="char-img-wrap idle-float" id="char-wrap">
+        <img src="./anime_girl.png" alt="星空少女" id="char-img">
       </div>
       <div class="key-wrap" id="key-wrap">
         <svg viewBox="0 0 80 120">
@@ -301,7 +218,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-deep);color
 <!-- ===== 视图2：选择题 ===== -->
 <section class="view" data-route="quiz" id="view-quiz">
   <div class="quiz-container">
-    <div class="quiz-mini-panda" id="quiz-mini-panda"><svg><use href="#panda-full"/></svg></div>
+    <div class="quiz-mini-char" id="quiz-mini-char"><img src="./anime_girl.png" alt="少女"></div>
     <div class="quiz-progress" id="quiz-progress">第 1 / 4 题</div>
     <div class="quiz-question" id="quiz-question"></div>
     <div class="quiz-options" id="quiz-options"></div>
@@ -387,90 +304,126 @@ function navigate(route){
   if(route==='panda')stopConfetti();
 }
 
-/* ===== 3D环绕星空 ===== */
-(function initStarfield3D(){
-  const canvas=document.getElementById('starfield-3d');
+/* ===== 真实银河星空 ===== */
+(function initGalaxy(){
+  const canvas=document.getElementById('galaxy-canvas');
   const ctx=canvas.getContext('2d');
-  let w,h,stars=[],meteors=[],rotationY=0,rotationX=0.15;
+  let w,h,stars=[],meteors=[],nebulae=[];
   function resize(){w=canvas.width=innerWidth;h=canvas.height=innerHeight;}
   resize();addEventListener('resize',resize);
-  const focal=Math.max(w,h)*0.8;
-  // 生成3D星点（球面分布，银河带增加密度）
-  const starCount=Math.min(1200,Math.floor(w*h/1200));
-  for(let i=0;i<starCount;i++){
-    // 球面坐标
-    const theta=Math.random()*Math.PI*2;
-    const phi=Math.acos(2*Math.random()-1);
-    const r=800+Math.random()*400;
-    // 银河带（phi接近PI/2的区域更亮更密）
-    const galacticDist=Math.abs(phi-Math.PI/2);
-    const inGalaxy=galacticDist<0.35;
-    stars.push({
-      x:r*Math.sin(phi)*Math.cos(theta),
-      y:r*Math.cos(phi),
-      z:r*Math.sin(phi)*Math.sin(theta),
-      baseSize:inGalaxy?Math.random()*2+0.8:Math.random()*1.5+0.3,
-      baseAlpha:inGalaxy?Math.random()*0.5+0.4:Math.random()*0.5+0.2,
-      twinkle:Math.random()*Math.PI*2,
-      twinkleSpeed:Math.random()*0.03+0.008,
-      color:inGalaxy?(Math.random()>0.5?'rgba(255,240,220,':'rgba(200,220,255,'):(Math.random()>0.7?'rgba(255,200,220,':'rgba(255,255,255,')
-    });
-  }
-  // 流星
-  function spawnMeteor(){
-    const theta=Math.random()*Math.PI*2;
-    const phi=Math.PI/2+(Math.random()-0.5)*0.8;
-    const r=600;
-    meteors.push({
-      x:r*Math.sin(phi)*Math.cos(theta),y:r*Math.cos(phi),z:r*Math.sin(phi)*Math.sin(theta),
-      vx:(Math.random()-0.5)*3,vy:Math.random()*2+1,vz:(Math.random()-0.5)*3,
-      len:Math.random()*80+60,alpha:1,size:Math.random()*2+1.5
-    });
-  }
-  setInterval(spawnMeteor,350);
-  setInterval(spawnMeteor,600);
-  function project(x,y,z){
-    const scale=focal/(focal+z);
-    return {x:w/2+x*scale,y:h/2+y*scale,scale:scale};
-  }
-  function rotateY(x,z,angle){return {x:x*Math.cos(angle)-z*Math.sin(angle),z:x*Math.sin(angle)+z*Math.cos(angle)};}
-  function rotateX(y,z,angle){return {y:y*Math.cos(angle)-z*Math.sin(angle),z:y*Math.sin(angle)+z*Math.cos(angle)};}
-  function animate(){
-    ctx.fillStyle='rgba(5,5,16,0.3)';
+
+  // 背景渐变（深蓝色夜空，不是纯黑）
+  function drawBackground(){
+    const grad=ctx.createLinearGradient(0,0,0,h);
+    grad.addColorStop(0,'#06061a');
+    grad.addColorStop(0.3,'#0a0a2e');
+    grad.addColorStop(0.6,'#0e0e38');
+    grad.addColorStop(1,'#080820');
+    ctx.fillStyle=grad;
     ctx.fillRect(0,0,w,h);
-    rotationY+=0.0008;
+  }
+
+  // 银河星云（多层径向渐变，斜跨天空）
+  nebulae=[
+    {x:w*0.3,y:h*0.35,r:w*0.5,color1:'rgba(100,150,255,0.12)',color2:'rgba(150,100,255,0.06)',rot:-0.4},
+    {x:w*0.6,y:h*0.5,r:w*0.45,color1:'rgba(200,180,255,0.1)',color2:'rgba(255,150,200,0.05)',rot:-0.3},
+    {x:w*0.45,y:h*0.6,r:w*0.4,color1:'rgba(180,220,255,0.08)',color2:'rgba(100,180,255,0.04)',rot:-0.35},
+    {x:w*0.7,y:h*0.25,r:w*0.3,color1:'rgba(255,200,220,0.06)',color2:'rgba(200,150,255,0.03)',rot:-0.3}
+  ];
+  function drawNebulae(){
+    for(const n of nebulae){
+      ctx.save();
+      ctx.translate(n.x,n.y);
+      ctx.rotate(n.rot);
+      const grad=ctx.createRadialGradient(0,0,0,0,0,n.r);
+      grad.addColorStop(0,n.color1);
+      grad.addColorStop(0.5,n.color2);
+      grad.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=grad;
+      ctx.beginPath();
+      ctx.ellipse(0,0,n.r,n.r*0.35,0,0,6.28);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // 星星（2000+颗，多种颜色，大星带光晕）
+  const starColors=['rgba(255,255,255,','rgba(200,220,255,','rgba(255,240,220,','rgba(255,200,220,','rgba(180,200,255,','rgba(255,230,200,'];
+  const starCount=Math.min(2200,Math.floor(w*h/700));
+  for(let i=0;i<starCount;i++){
+    const isBig=Math.random()>0.92;
+    stars.push({
+      x:Math.random()*w,y:Math.random()*h,
+      r:isBig?Math.random()*1.8+0.8:Math.random()*1.2+0.3,
+      color:starColors[Math.floor(Math.random()*starColors.length)],
+      a:Math.random()*0.6+0.3,
+      twinkle:Math.random()*6.28,
+      twinkleSpeed:Math.random()*0.025+0.008,
+      big:isBig
+    });
+  }
+
+  // 流星（多道并行，长尾迹，渐变色）
+  function spawnMeteor(){
+    const startX=Math.random()*w*0.8+w*0.1;
+    meteors.push({
+      x:startX,y:-40,
+      vx:(Math.random()-0.3)*6+2,
+      vy:Math.random()*5+6,
+      len:Math.random()*180+120,
+      alpha:1,
+      size:Math.random()*2+1.5,
+      hue:Math.random()>0.5?'blue':'pink'
+    });
+  }
+  setInterval(spawnMeteor,250);
+  setInterval(spawnMeteor,500);
+  setInterval(spawnMeteor,800);
+
+  function animate(){
+    drawBackground();
+    drawNebulae();
     // 星星
     for(const s of stars){
       s.twinkle+=s.twinkleSpeed;
-      let r1=rotateY(s.x,s.z,rotationY);
-      let r2=rotateX(s.y,r1.z,rotationX);
-      if(r2.z<-focal)continue;
-      const p=project(r1.x,r2.y,r2.z);
-      const alpha=s.baseAlpha*(0.5+0.5*Math.sin(s.twinkle))*Math.min(1,p.scale*1.5);
-      const size=s.baseSize*p.scale;
-      ctx.beginPath();ctx.arc(p.x,p.y,size,0,6.28);
+      const alpha=s.a*(0.5+0.5*Math.sin(s.twinkle));
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.28);
       ctx.fillStyle=s.color+alpha+')';ctx.fill();
-      if(size>1.5){ctx.beginPath();ctx.arc(p.x,p.y,size*3,0,6.28);ctx.fillStyle=s.color+(alpha*0.08)+')';ctx.fill();}
+      if(s.big){
+        // 大星带光晕
+        ctx.beginPath();ctx.arc(s.x,s.y,s.r*4,0,6.28);
+        ctx.fillStyle=s.color+(alpha*0.1)+')';ctx.fill();
+        // 十字光芒
+        ctx.strokeStyle=s.color+(alpha*0.15)+')';
+        ctx.lineWidth=0.5;
+        ctx.beginPath();ctx.moveTo(s.x-s.r*6,s.y);ctx.lineTo(s.x+s.r*6,s.y);
+        ctx.moveTo(s.x,s.y-s.r*6);ctx.lineTo(s.x,s.y+s.r*6);ctx.stroke();
+      }
     }
     // 流星
     for(let i=meteors.length-1;i>=0;i--){
       const m=meteors[i];
-      m.x+=m.vx;m.y+=m.vy;m.z+=m.vz;m.alpha-=0.008;
-      if(m.alpha<=0){meteors.splice(i,1);continue;}
-      let r1=rotateY(m.x,m.z,rotationY);
-      let r2=rotateX(m.y,r1.z,rotationX);
-      if(r2.z<-focal)continue;
-      const p=project(r1.x,r2.y,r2.z);
-      // 流星尾迹（沿速度方向）
-      const tx=p.x-m.vx*15*p.scale,ty=p.y-m.vy*15*p.scale;
-      const grad=ctx.createLinearGradient(p.x,p.y,tx,ty);
-      grad.addColorStop(0,'rgba(255,250,230,'+m.alpha+')');
-      grad.addColorStop(0.3,'rgba(255,200,220,'+(m.alpha*0.6)+')');
-      grad.addColorStop(1,'rgba(100,180,255,0)');
-      ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(tx,ty);
-      ctx.strokeStyle=grad;ctx.lineWidth=m.size*p.scale;ctx.lineCap='round';ctx.stroke();
-      ctx.beginPath();ctx.arc(p.x,p.y,m.size*2*p.scale,0,6.28);
-      ctx.fillStyle='rgba(255,250,230,'+(m.alpha*0.4)+')';ctx.fill();
+      m.x+=m.vx;m.y+=m.vy;m.alpha-=0.006;
+      if(m.alpha<=0||m.y>h+60){meteors.splice(i,1);continue;}
+      const tailX=m.x-m.vx*(m.len/8);
+      const tailY=m.y-m.vy*(m.len/8);
+      const grad=ctx.createLinearGradient(m.x,m.y,tailX,tailY);
+      if(m.hue==='blue'){
+        grad.addColorStop(0,'rgba(255,255,255,'+m.alpha+')');
+        grad.addColorStop(0.2,'rgba(180,220,255,'+(m.alpha*0.7)+')');
+        grad.addColorStop(0.5,'rgba(100,150,255,'+(m.alpha*0.4)+')');
+        grad.addColorStop(1,'rgba(150,100,255,0)');
+      }else{
+        grad.addColorStop(0,'rgba(255,255,255,'+m.alpha+')');
+        grad.addColorStop(0.2,'rgba(255,200,220,'+(m.alpha*0.7)+')');
+        grad.addColorStop(0.5,'rgba(255,107,157,'+(m.alpha*0.4)+')');
+        grad.addColorStop(1,'rgba(200,100,255,0)');
+      }
+      ctx.beginPath();ctx.moveTo(m.x,m.y);ctx.lineTo(tailX,tailY);
+      ctx.strokeStyle=grad;ctx.lineWidth=m.size;ctx.lineCap='round';ctx.stroke();
+      // 流星头部光晕
+      ctx.beginPath();ctx.arc(m.x,m.y,m.size*3,0,6.28);
+      ctx.fillStyle='rgba(255,255,255,'+(m.alpha*0.3)+')';ctx.fill();
     }
     requestAnimationFrame(animate);
   }
@@ -483,7 +436,7 @@ const confetti=(function(){
   let particles=[],w,h,running=false,animId=null;
   function resize(){w=canvas.width=innerWidth;h=canvas.height=innerHeight;}
   resize();addEventListener('resize',resize);
-  const colors=['#ff6b9d','#ff8fab','#ffc2d4','#ffe4a0','#fff3d6','#ff4d8d','#ffa0c0'];
+  const colors=['#ff6b9d','#ff8fab','#ffc2d4','#ffe4a0','#fff3d6','#ff4d8d','#ffa0c0','#c4b5fd','#a5b4fc'];
   function createP(x,y,burst){return{x:x!==undefined?x:Math.random()*w,y:y!==undefined?y:-20,vx:burst?(Math.random()-0.5)*12:(Math.random()-0.5)*2,vy:burst?-Math.random()*15-5:Math.random()*2+1,size:Math.random()*14+8,color:colors[Math.floor(Math.random()*colors.length)],rot:Math.random()*6.28,rs:(Math.random()-0.5)*0.1,heart:Math.random()>0.4,life:1,decay:burst?0.003:0.001,g:burst?0.25:0.05,wob:Math.random()*6.28,ws:Math.random()*0.05+0.02};}
   function drawHeart(x,y,s,c,r){ctx.save();ctx.translate(x,y);ctx.rotate(r);ctx.scale(s/30,s/30);ctx.beginPath();ctx.moveTo(0,8);ctx.bezierCurveTo(-14,-4,-14,-18,0,-8);ctx.bezierCurveTo(14,-18,14,-4,0,8);ctx.fillStyle=c;ctx.fill();ctx.restore();}
   function update(){ctx.clearRect(0,0,w,h);
@@ -501,15 +454,15 @@ const confetti=(function(){
 function startConfetti(){state.confettiActive=true;confetti.start();setTimeout(function(){confetti.burst();},300);}
 function stopConfetti(){state.confettiActive=false;confetti.stop();}
 
-/* ===== 小熊猫场景逻辑 ===== */
-const pandaWrap=document.getElementById('panda-wrap');
+/* ===== 角色场景逻辑 ===== */
+const charWrap=document.getElementById('char-wrap');
 const dialogBox=document.getElementById('dialog-box');
 const dialogText=document.getElementById('dialog-text');
 const dialogOptions=document.getElementById('dialog-options');
 const openingHint=document.getElementById('opening-hint');
 const keyWrap=document.getElementById('key-wrap');
 const DIALOG1_TEXT='Lily 你能看到我在向你眨眼吗？';
-const DIALOG2_TEXT='你的小熊猫向你送来最真挚的生日祝福！——愿你一直能够成长在充满爱的环境里，勇敢的去cosplay你喜欢的角色，身体中的妖魔鬼怪永远绕开你，你将会变得像Young.T那般无所无惧、勇往直前、意志坚定！';
+const DIALOG2_TEXT='你的星空少女向你送来最真挚的生日祝福！——愿你一直能够成长在充满爱的环境里，勇敢的去cosplay你喜欢的角色，身体中的妖魔鬼怪永远绕开你，你将会变得像Young.T那般无所无惧、勇往直前、意志坚定！';
 
 function typeText(el,text,speed,callback){
   el.innerHTML='';let i=0;
@@ -527,18 +480,16 @@ document.getElementById('view-panda').addEventListener('click',function(e){
 function startDialog1(){
   state.pandaStage='dialog1';
   openingHint.style.display='none';
-  // 小熊猫跳跃跳出屏幕
-  pandaWrap.classList.add('jumping');
-  setTimeout(function(){
-    pandaWrap.classList.remove('jumping');
-    pandaWrap.classList.add('jumped');
-  },400);
+  // 角色从屏幕跳出
+  charWrap.classList.remove('idle-float');
+  charWrap.classList.add('jumped');
+  setTimeout(function(){charWrap.classList.add('idle-float');},1600);
   setTimeout(function(){
     dialogBox.classList.add('show');
     typeText(dialogText,DIALOG1_TEXT,80,function(){
       setTimeout(function(){dialogOptions.classList.add('show');},800);
     });
-  },1000);
+  },1200);
 }
 
 document.getElementById('opt-yes').addEventListener('click',function(e){
@@ -553,9 +504,9 @@ document.getElementById('opt-no').addEventListener('click',function(e){
   e.stopPropagation();
   if(state.pandaStage!=='dialog1')return;
   dialogOptions.classList.remove('show');
-  pandaWrap.style.filter='brightness(0.85)';
+  charWrap.style.filter='brightness(0.85) saturate(0.8)';
   setTimeout(function(){
-    pandaWrap.style.filter='';
+    charWrap.style.filter='';
     typeText(dialogText,'没关系，那我再眨一次给你看～',80,function(){
       setTimeout(function(){dialogOptions.classList.add('show');},1000);
     });
@@ -591,7 +542,7 @@ function showQuestion(){
   document.getElementById('quiz-question').textContent=q.question;
   document.getElementById('quiz-feedback').textContent='';
   document.getElementById('quiz-feedback').className='quiz-feedback';
-  document.getElementById('quiz-mini-panda').classList.remove('show');
+  document.getElementById('quiz-mini-char').classList.remove('show');
   const optsEl=document.getElementById('quiz-options');optsEl.innerHTML='';
   q.options.forEach(function(opt,idx){
     const btn=document.createElement('button');btn.className='quiz-option';
@@ -607,7 +558,7 @@ function answerQuestion(idx,btnEl){
   if(idx===q.correct){
     btnEl.classList.add('correct');allBtns.forEach(function(b){b.style.pointerEvents='none';});
     feedback.textContent=q.congrats;feedback.className='quiz-feedback success';
-    document.getElementById('quiz-mini-panda').classList.add('show');
+    document.getElementById('quiz-mini-char').classList.add('show');
     confetti.burst();
     if(state.quizIndex===CONFIG.quizQuestions.length-1){
       setTimeout(function(){const voice=document.getElementById('voice-audio');voice.play().catch(function(){});
