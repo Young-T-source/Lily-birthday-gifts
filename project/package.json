@@ -1,0 +1,9 @@
+{
+  "name": "lily-birthday-winter-letter",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"build": "node build.cjs", "preview": "node serve.cjs", "check": "node check.cjs"},
+  "dependencies": {"three": "0.160.0"},
+  "devDependencies": {"esbuild": "0.24.0", "playwright-core": "1.48.0"}
+}

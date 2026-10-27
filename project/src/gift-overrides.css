@@ -1,0 +1,91 @@
+/* The scene owns the screen; the birthday UI supplies the typography. */
+.brand,.weather-temp,.weather-meta,.poem,.credit{display:none!important}
+.weather{top:auto;right:24px;bottom:24px;z-index:25;opacity:1;transform:none}
+.mode-badge{display:none}.quality-button{margin:0;font-size:9px;background:#08121c85}
+.dock{bottom:26px;z-index:24}.dock .hint{background:none;border:0;backdrop-filter:none;padding:0;text-shadow:0 1px 6px #000;font-family:var(--sans);font-size:10px;letter-spacing:.12em}
+.dock .pill{height:39px;font-size:11px;padding:0 18px;background:#0a1820b8;border-color:#e8c99c4a}
+.dock .round{height:37px;width:37px}.dock-row{gap:8px}
+#btn-sound{display:none!important}
+.bd-house-menu{position:absolute;top:93px;right:32px;width:270px;padding:21px 22px;background:linear-gradient(145deg,#231d23f5,#101d28f7);border:1px solid #dcbab650;border-radius:13px;box-shadow:0 15px 55px #0007;color:#ebd5ca;backdrop-filter:blur(18px);pointer-events:auto;z-index:40}
+.bd-house-menu[hidden]{display:none}
+.bd-house-menu>p{font:12px/1.7 var(--sans);color:#c4a6a0;margin:0 0 13px}
+.bd-house-menu button{display:block;text-align:left;width:100%;background:none;border:0;border-top:1px solid #e6c4b91a;color:#f3ded4;padding:11px 0;font:13px var(--sans);cursor:pointer;transition:color .2s}
+.bd-house-menu button:hover{color:#ffc4ce}.bd-house-menu button small{display:block;color:#b7a4a1;font:10px/1.8 var(--sans);margin-top:4px}
+.bd-house-menu>span{display:block;font:9px/1.6 var(--sans);letter-spacing:.08em;color:#b9a7a3;margin-top:11px}
+.bd-near-verb{font:inherit}
+.birthday-reading .bd-house-menu{display:none}
+@media(max-width:700px){.bd-house-menu{top:151px;right:14px;width:235px;padding:16px 18px;max-height:calc(100dvh - 200px);overflow:auto}.bd-house-menu button{padding:9px 0;font-size:12px}.bd-house-button{font-size:10px!important}.bd-top-actions{gap:9px!important}#birthday-ui .bd-fireworks{bottom:88px}}
+@media(min-width:901px) and (pointer:fine){#app.walking #walk-pad{display:none}}
+#toast{bottom:130px;z-index:70}.birthday-reading .dock,.birthday-reading #walk-pad,.birthday-reading #walk-reticle,.birthday-reading .weather{display:none!important}
+body:not(.gift-started) .dock,body:not(.gift-started) .weather,body:not(.gift-started) #walk-pad{display:none!important}
+#walk-pad{bottom:100px;left:24px;grid-template-columns:repeat(3,36px);grid-template-rows:repeat(2,36px)}
+#gift-editor{position:fixed;right:24px;top:95px;z-index:90;width:255px;padding:20px;background:#10202df5;border:1px solid #d8b68470;border-radius:12px;color:#eee3d1;font:12px/1.8 var(--sans);box-shadow:0 20px 70px #0008}
+#gift-editor label{display:block;margin:12px 0 6px}#gift-editor input{max-width:100%;font:11px var(--sans);color:#c9c3bb}
+#gift-editor p{color:#c4b5a5;font-size:11px;margin-top:12px}#gift-editor button{background:transparent;border:1px solid #b79b7370;padding:6px 12px;color:#f2d3a7;margin-top:10px;border-radius:20px;cursor:pointer}
+@media(min-width:901px){
+  .reading-memory #birthday-ui .bd-reader-overlay{place-items:center end;padding:28px 35px}
+  .reading-memory #birthday-ui .bd-reader{width:min(580px,49vw);max-height:calc(100dvh - 56px)}
+  .reading-memory #birthday-ui .bd-reader-backdrop{background:linear-gradient(90deg,#030a1310 0%,#030a1320 40%,#030a1360 100%);backdrop-filter:none}
+  .reading-memory #birthday-ui .bd-story-article{padding:29px 37px 25px}
+  .reading-memory #birthday-ui #bd-reader-title{font-size:29px}
+  .reading-memory #birthday-ui .bd-story-body{font-size:13px;line-height:2.05}
+  .reading-memory #birthday-ui .bd-reader-footer{padding:17px 27px}
+}
+@media(max-width:700px){.weather{bottom:16px;right:12px}.dock{bottom:16px;width:auto}.dock .hint{display:none}.dock .pill{height:36px;font-size:10px;padding:0 13px}.dock .round{width:34px;height:34px}.quality-button{font-size:8px;padding:4px 7px}.dock-row{gap:5px}#walk-pad{bottom:86px;left:14px;grid-template-columns:repeat(3,34px);grid-template-rows:repeat(2,34px)}#toast{bottom:145px;max-width:85vw;font-size:10px}#gift-editor{right:12px;top:74px;width:235px}}
+
+/* A quiet coda after the fireworks: keep the sky open for meteor trails. */
+.bd-wish-phase{position:fixed;left:50%;bottom:16%;transform:translateX(-50%);width:min(520px,86vw);text-align:center;color:#fff0d8;text-shadow:0 2px 18px #0b1836;pointer-events:none;animation:wish-arrive 1.8s ease both}
+.bd-wish-phase[hidden]{display:none}.bd-wish-phase>span{font:11px Georgia,serif;letter-spacing:.38em;color:#e7bfb2}.bd-wish-phase h3{font:400 clamp(22px,3vw,33px) "Noto Serif SC","SimSun",serif;letter-spacing:.13em;margin:17px 0 12px}.bd-wish-phase p{font-size:12px;letter-spacing:.08em;line-height:1.8}.bd-wish-phase i{display:block;width:110px;height:1px;background:#fff4df33;margin:24px auto}.bd-wish-phase i:after{content:"";display:block;width:calc(var(--wish-progress,1)*100%);height:1px;background:#f1c7ba;transition:width .3s linear}.bd-wishing .bd-personal-note{opacity:0}
+@keyframes wish-arrive{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+@media(max-width:600px){.bd-wish-phase{bottom:29%;}.bd-wish-phase h3{font-size:24px}.bd-wish-phase p{font-size:11px}.bd-house-menu{max-height:calc(100dvh - 210px);overflow:auto}}
+/* v4: keep reading, movement and the celebration controls in separate zones. */
+.bd-intro-shade{background:linear-gradient(90deg,rgba(6,13,20,.92),rgba(6,13,20,.48) 48%,transparent 78%)}
+.bd-intro-footnote small{display:block;margin-top:7px;opacity:.65}
+.bd-world-caption{position:fixed;transform:translate(-50%,-100%);max-width:min(370px,72vw);padding:12px 18px;background:rgba(14,20,24,.70);border:1px solid #d8bb8d45;border-radius:4px;color:#f7e5c9;line-height:1.9;font-size:14px;text-align:center;pointer-events:none;text-shadow:0 1px 4px #000}
+.bd-show-controls{position:fixed;right:26px;bottom:28px;display:flex;align-items:center;gap:10px;pointer-events:auto;padding:10px;background:#0b1924c9;border:1px solid #cdb68b55;color:#eadac1;font-size:12px}
+.bd-show-controls button,.bd-ending button,.bd-cancel-touch{background:#17232bd9;color:#f2dfc0;border:1px solid #c7a67b75;padding:10px 15px;font:inherit;cursor:pointer;border-radius:3px}
+.bd-cancel-touch{position:fixed;right:28px;bottom:112px;pointer-events:auto;font-size:12px}
+.bd-cancel-touch kbd{margin-left:6px;opacity:.6}
+.bd-ending{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:0 20px 15vh;background:linear-gradient(transparent 45%,#08121c99);pointer-events:none;color:#f5dfbc;text-align:center}
+.bd-ending p{font-family:Georgia,'KaiTi','Songti SC',serif;font-size:clamp(21px,3vw,35px);letter-spacing:.06em;text-shadow:0 2px 15px #000}
+.bd-ending div{display:flex;gap:14px;pointer-events:auto}.bd-ending small{margin-top:22px;letter-spacing:.16em;opacity:.62}
+.bd-show-controls[hidden],.bd-ending[hidden],.bd-world-caption[hidden],.bd-cancel-touch[hidden]{display:none!important}
+.bd-at-ending .bd-near,.bd-at-ending .bd-personal-note{display:none!important}
+.birthday-reading .bd-show-controls,.birthday-reading .bd-world-caption,.birthday-reading .bd-wish-phase{visibility:hidden}
+#toast{max-width:min(680px,72vw);white-space:normal;line-height:1.7;pointer-events:none}
+.birthday-fireworks #toast{display:none}
+.birthday-fireworks .dock,.birthday-fireworks #walk-pad,.birthday-fireworks #btn-quality{visibility:hidden;pointer-events:none}
+.bd-at-ending .bd-ending p{animation:closing-line 7s both}
+@keyframes closing-line{0%{opacity:0;transform:translateY(8px)}20%,70%{opacity:1;transform:none}100%{opacity:0}}
+#loader .load-line span{transform:none;width:var(--load-progress,3%);animation:none;transition:width .4s ease}
+#loader .ember{width:86px;height:110px;border:7px solid #392b21;background:radial-gradient(ellipse,#ffd493 var(--load-progress,3%),#986631 80%);box-shadow:0 0 90px 20px #eaa95442;position:relative;overflow:hidden}
+#loader .ember:before,#loader .ember:after{content:'';position:absolute;background:#392b21;z-index:2}
+#loader .ember:before{width:6px;height:100%;left:50%;top:0}#loader .ember:after{height:6px;width:100%;top:50%;left:0}
+#loader .ember i{display:none}#loader.hidden{background:#fae1ba;opacity:0;transition:opacity 1.2s ease}
+.load-percent{font-size:12px;color:#d9c6a9;letter-spacing:.12em}.load-percent[hidden]{display:none}
+@media(max-width:700px){
+ #toast{bottom:225px;max-width:calc(100vw - 36px);font-size:12px}
+ #walk-pad{bottom:88px;left:14px}
+ .bd-show-controls{right:12px;bottom:18px;gap:7px}.bd-show-controls>span{display:none}
+ .bd-cancel-touch{bottom:160px;right:14px}
+ .bd-near{bottom:215px!important;max-width:calc(100vw - 30px)!important}
+ .bd-world-caption{font-size:12px;max-width:76vw;padding:10px 13px}
+ .bd-ending{padding-bottom:210px}.bd-ending p{font-size:23px;max-width:280px;line-height:1.7}
+ .bd-intro-copy{padding-bottom:max(28px,env(safe-area-inset-bottom));}
+}
+@media(max-height:500px) and (orientation:landscape){.bd-intro-copy{padding-top:20px;padding-bottom:20px}.bd-intro-description{font-size:12px;line-height:1.6}.bd-intro-footnote{font-size:10px}.bd-intro h1{font-size:34px}.bd-ending{padding-bottom:70px}.bd-world-caption{top:28%!important}.bd-show-controls{bottom:15px}}
+@media(prefers-reduced-motion:reduce){#loader .ember{box-shadow:none}.bd-intro-leaving{transition:none!important}}
+.keepsake-preview{position:fixed;inset:0;z-index:200;background:#06111df5;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;align-content:center;gap:14px;padding:24px;color:#f5dfbc;font:13px Georgia,'Microsoft YaHei',serif}
+.keepsake-preview img{display:block;max-width:min(1100px,100%);max-height:72vh;object-fit:contain;border:1px solid #a8885655}
+.keepsake-preview p{width:100%;text-align:center;opacity:.7;margin:0}
+.keepsake-preview a,.keepsake-preview button{background:#182c3d;color:#f5dfbc;border:1px solid #c6aa7b77;border-radius:3px;padding:12px 22px;text-decoration:none;font:inherit;cursor:pointer}
+/* The invitation leaves the celebration visible; the sky sequence runs itself. */
+#birthday-ui .bd-intro-shade{background:linear-gradient(90deg,rgba(16,23,34,.79),rgba(20,25,37,.28) 47%,transparent 76%)}
+#birthday-ui .bd-wordmark-emblem,#birthday-ui .bd-intro-copy em{color:#ffd1dd}
+.bd-show-controls{background:#1725359e;border-color:#e5b9c345;border-radius:20px;padding:6px 8px 6px 17px;font-size:11px}
+.bd-show-controls>span{color:#f5d4db;letter-spacing:.06em}
+.bd-show-controls button{border-color:#efd0d33b;background:#d5acb519;border-radius:15px;padding:7px 12px;font-size:11px}
+.bd-wish-phase{transition:opacity 1.8s ease}
+@media(max-width:700px){.bd-show-controls{padding:5px;right:14px;bottom:19px}}
+/* Quality and fireworks must remain separate click targets on desktop. */
+@media(min-width:701px){.weather{right:36px;bottom:104px}.quality-button{font-size:11px;padding:7px 12px}}

@@ -1,0 +1,20 @@
+node_modules/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+
+# Local previews, exports and recoverable working backups are not the website.
+/previews/
+/versions/
+/Blender/
+/deployment-review/
+/git-deploy/
+/*-audit*.json
+/验收记录*.json
+
+# The build produces a second local entry for convenience. Pages serves index.html.
+/给Lily的生日雪夜.html
+
