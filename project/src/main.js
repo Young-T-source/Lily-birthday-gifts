@@ -25,6 +25,7 @@ import { Soundscape } from './soundscape-v4.js';
 import { manageLighting } from './lighting-v4.js';
 import { createCelebrationDecor } from './celebration-decor.js';
 import { mountBirthdayInvitation } from './invitation-v8.js';
+import { monitorInvitationMotion } from './invitation-performance-v10.js';
 import { MEDIA } from './local-media.js';
 /* ================================================================== */
 /*  BOOT                                                              */
@@ -48,7 +49,9 @@ let walk, blenderDetails = null, walkReturnMode = 'outside', birthday = null;
 const invitation=mountBirthdayInvitation({photos:MEDIA.invitationPhotos||[],onEnter(){
   app.inert=false;
   birthday?.enter();
-}});
+},onEntered:startWorldLoop});
+app.dataset.sceneLoop='preparing';
+monitorInvitationMotion(invitation.element);
 const sound = new Soundscape();
 let mode = 'outside';
 let transition = null;
@@ -181,22 +184,30 @@ function init() {
   await breathe();
 
   sky = createSky(scene);
+  await breathe();
   createMountains(scene);
+  await breathe();
   terrain = createTerrain(scene, textures);
+  await breathe();
   createPath(scene, textures);
+  await breathe();
   forest = createForest(scene, textures);
+  await breathe();
   mist = createGroundMist(scene, textures);
   mark('environment');
   await breathe();
 
   cabin = buildCabin(scene, textures);
+  await breathe();
   blenderDetails = await loadBlenderDetails(scene, textures);
+  await breathe();
   smoke = createSmoke(scene, textures, cabin.smokeOrigin);
   mark('cabin');
   await breathe();
 
   snowfall = createSnowfall(scene, textures);
   createDust();
+  await breathe();
   createLighting();
   createEnvironmentMap();
   mark('lights+envmap');
@@ -213,6 +224,7 @@ function init() {
   setupDoorInteraction();
   bindEvents();
   birthday = setupBirthdayGame({scene,camera,renderer,textures,walk,controls,cabin,sound,toast,smoke,snowfall,saveKeepsake});
+  await breathe();
   celebrationDecor = createCelebrationDecor({scene,textures});
   mark('post+controls');
   await Promise.all([birthday.world.ready.catch(()=>{}),birthday.gallery.ready]);
@@ -253,6 +265,7 @@ function init() {
     setTimeout(() => {
       app.classList.add('ready');
       birthday.ready();
+      app.dataset.sceneLoop='waiting-for-yes';
       invitation.setReady();
       // The birthday invitation opens the experience after the scene is ready.
     }, 320);
@@ -316,7 +329,8 @@ function init() {
     return btoa(result);
   };
 
-  animate(performance.now());
+  // The opaque invitation owns the screen. Prewarmed 3D waits here instead
+  // of consuming CPU/GPU every frame beneath the rotating photograph cards.
   })();
 }
 
@@ -794,6 +808,13 @@ let fpsTime = 0;
 let fps = 0;
 let lastDoorAmount = 0;
 let frameRequest=0,backgroundRequest=0,loopStarted=false;
+let sceneFrameCount=0;
+function startWorldLoop(){
+  if(loopStarted)return;
+  app.dataset.sceneLoop='running';
+  clock.start();
+  animate(performance.now());
+}
 function queueFrame(){
   if(document.hidden)backgroundRequest=setTimeout(()=>animate(performance.now()),100);
   else frameRequest=requestAnimationFrame(animate);
@@ -803,6 +824,7 @@ function animate(now) {
   loopStarted=true;queueFrame();
   const rawDt = clock.getDelta();
   if(document.hidden)return;
+  sceneFrameCount++;
   syncRenderSize();
   qualityClock+=Math.min(rawDt,1);
   const dt = Math.min(rawDt, 0.05);
@@ -812,6 +834,7 @@ function animate(now) {
   if (fpsTime > 1) {
     fps = frames / fpsTime; frames = 0; fpsTime = 0;
     app.dataset.fps = String(Math.round(fps));
+    app.dataset.sceneFrames=String(sceneFrameCount);
     if(birthday)app.dataset.birthday = JSON.stringify(birthday.stats());
     if(walk)app.dataset.walk=JSON.stringify(walk.getState());
     app.dataset.render=JSON.stringify({fps:+fps.toFixed(1),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,dpr:renderer.getPixelRatio(),quality:qualityLevel,lights:lighting?.stats(),programCount:renderer.info.programs?.length||0,door:{...doorPerformance,amount:+cabin.getDoorAmount().toFixed(5),target:cabin.doorState.target,moving:cabin.doorState.moving,velocity:+cabin.doorState.velocity.toFixed(5)},doorway:{...doorwayPerformance,watching:previousDoorwayWatching},celebration:celebrationDecor?.getStats(),...renderSizingStats()});

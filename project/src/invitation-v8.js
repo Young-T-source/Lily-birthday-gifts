@@ -50,7 +50,7 @@ export function invitationMarkup(photos=[]) {
 }
 
 /** An explicit Yes is the sole way out. No timer can enter the 3D world. */
-export function mountBirthdayInvitation({photos = [], onEnter, root = document.getElementById('birthday-invitation')} = {}) {
+export function mountBirthdayInvitation({photos = [], onEnter, onEntered, root = document.getElementById('birthday-invitation')} = {}) {
   if (!root) {
     root = document.createElement('div'); root.id = 'birthday-invitation';
     document.body.appendChild(root);
@@ -98,9 +98,10 @@ export function mountBirthdayInvitation({photos = [], onEnter, root = document.g
     entered=true;root.dataset.state='entering';root.classList.add('is-entering');yes.disabled=true;syncStats();
     // Keep this call in the click stack: audio still has a real user gesture.
     onEnter?.();
-    exitTimer=setTimeout(()=>{root.hidden=true;root.dataset.state='entered';root.setAttribute('aria-modal','false');},950);
+    exitTimer=setTimeout(()=>{root.hidden=true;root.dataset.state='entered';root.setAttribute('aria-modal','false');onEntered?.();},950);
   }
   function showError(message) {
+    clearTimeout(exitTimer);
     failed=true;ready=false;root.classList.add('has-error');root.dataset.state='error';root.setAttribute('aria-busy','false');
     yes.disabled=true;no.disabled=true;q('.iv-confirm').hidden=true;q('.iv-loading').hidden=true;
     const error=q('.iv-error');error.hidden=false;error.querySelector('p').textContent=message||'这一页暂时没能完整打开。请刷新后再试一次。';syncStats();
