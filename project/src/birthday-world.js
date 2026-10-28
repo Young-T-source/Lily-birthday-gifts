@@ -8,7 +8,7 @@ import { paperCard, brassPlate, carvedSign, interactionMaterial, contactShadow, 
 
 /* Original, metric-scale birthday scenography. All textures are authored here;
    the five still-life keepsakes are authored with Blender in make_birthday.py. */
-export function createBirthdayWorld({scene, textures}) {
+export function createBirthdayWorld({scene, textures,hasAlbum=false}) {
   const group=new THREE.Group();group.name='Lily · a winter birthday, seven memories';scene.add(group);
   const targets=[], photoFrames=[], flameLights=[], openings=[], haloAnimations=[];
   const staticBatchRoots=new Set();
@@ -134,7 +134,7 @@ export function createBirthdayWorld({scene, textures}) {
     {id:'campus',title:'被留好的那个座位',date:'白马校区',x:-7.1,z:.1,rot:.8,n:3},
     {id:'city',title:'第一次牵起你的手',date:'玄武湖 · 那一天',x:6.1,z:8.1,rot:-.45,n:4},
     {id:'journey',title:'陪你到大行宫',date:'大一 · 冬天',x:7.6,z:3.6,rot:-.7,n:5},
-    {id:'courage',title:'这次，我勇敢地回答',date:'新庄校区',x:6.8,z:-2.2,rot:-1.15,n:6},
+    {id:'courage',title:'你送来的光，我一直带着',date:'从白马到新庄',x:6.8,z:-2.2,rot:-1.15,n:6},
   ];
   function makeChest(st){
     const g=new THREE.Group();g.name=`Memory ${st.n}: ${st.title}`;g.position.set(st.x,snowY(st.x,st.z),st.z);g.rotation.y=st.rot;forecourt.add(g);
@@ -269,7 +269,7 @@ export function createBirthdayWorld({scene, textures}) {
   const letterLabel=textPanel('给 Lily','2026.10.29',.19,.09,{dark:false,size:43});letterLabel.rotation.x=-Math.PI/2;letterLabel.position.set(-.045,.018,-.054);letterGroup.add(letterLabel);
   halo(letterGroup,0,.12,0,.48);
   const letterHit=new THREE.Mesh(new THREE.BoxGeometry(.62,.62,.5),interactionMaterial);letterHit.position.y=.19;letterGroup.add(letterHit);
-  targets.push({id:'letter',title:'给 Lily 的一封信',kind:'letter',object:letterHit,group:letterGroup,position:new THREE.Vector3(-1.26,1.33,.22)});
+  targets.push({id:'letter',title:'给 Lily 的生日小笺',kind:'letter',object:letterHit,group:letterGroup,position:new THREE.Vector3(-1.26,1.33,.22)});
 
   /* PRIVATE PHOTOGRAPHS — framed on the upstairs memory wall. */
   const framePositions=[[-1.8,4.13,-3.214],[-.33,4.13,-3.214],[1.14,4.13,-3.214]];
@@ -283,6 +283,7 @@ export function createBirthdayWorld({scene, textures}) {
   const hearthFrame=new THREE.Group();hearthFrame.name='A little photograph by the fire';hearthFrame.position.set(-1.91,2.30,-2.83);hearthFrame.rotation.y=.12;group.add(hearthFrame);
   box(.24,.30,.026,M.goldDark,hearthFrame,0,0,0,.005);const hearthPhoto=new THREE.Mesh(new THREE.PlaneGeometry(.208,.265),new THREE.MeshStandardMaterial({map:photoFrames[0].mesh.material.map,roughness:.9}));hearthPhoto.position.z=.015;hearthFrame.add(hearthPhoto);
   box(.12,.025,.11,M.walnut,hearthFrame,0,-.153,-.01,.005);
+  if(hasAlbum){photoFrames.forEach(f=>f.group.removeFromParent());photoFrames.length=0;hearthFrame.removeFromParent();}
   const note=textPanel('给你留着灯','',.22,.085,{dark:false});note.position.set(-.43,2.145,-2.86);note.rotation.x=-Math.PI/2;group.add(note);
   line([[-.73,2.145,-2.91],[-.47,2.15,-2.79]],.003,M.sage,group);for(let i=0;i<6;i++){const petal=ball(.019,M.rose,group,-.72+Math.sin(i)*.011,2.16,-2.91+Math.cos(i)*.012);petal.scale.y=.45;}
   const doorPlateTex=canvasTexture(512,256,(c,w,h)=>{c.fillStyle='#a98450';c.fillRect(0,0,w,h);c.fillStyle='#302a26';c.textAlign='center';c.font='52px Georgia';c.fillText('Lily · 10.29',w/2,108);c.font='22px Georgia';c.fillText('a light left on for you',w/2,171);});

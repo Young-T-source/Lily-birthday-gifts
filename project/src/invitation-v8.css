@@ -30,7 +30,7 @@
 .iv-empty-photo svg{width:38%;height:52%;opacity:.8}
 .iv-empty-photo i{position:absolute;inset:15px;border-radius:50%;border:1px solid rgba(255,238,219,.24)}
 .iv-empty-photo b{position:absolute;left:11px;top:10px;font:italic 11px Georgia,serif;letter-spacing:.12em;color:rgba(108,63,79,.52)}
-.iv-photo{position:absolute;width:100%;height:100%;object-fit:cover}
+.iv-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#f0dfd5}
 .iv-photo[hidden]{display:none!important}
 .iv-orbit-card.has-photo .iv-empty-photo{display:none}
 .iv-photo-card figcaption{padding:9px 0 0;text-align:center;color:#784956}

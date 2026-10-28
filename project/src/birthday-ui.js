@@ -1,4 +1,4 @@
-import { STORIES, LETTER, RECEIVER } from './story-data.js';
+import { STORIES, LETTER, BIRTHDAY_NOTE, RECEIVER } from './story-data.js';
 import { PERSONAL } from './personal.js';
 
 /** The interface belongs to the scene; the host owns walking, sound and assets. */
@@ -19,6 +19,14 @@ export function mountBirthdayUI(callbacks = {}) {
   let musicPlaying = false;
   let ambienceEnabled=false;
   let focusBeforeReader = null;
+  let secretUnlocked = false;
+  let readerMode = 'story';
+  let albumIndex = 0;
+  const albumPhotos = (Array.isArray(callbacks.albumPhotos) ? callbacks.albumPhotos : [])
+    .filter(photo => photo && typeof photo.src === 'string' && photo.src)
+    .map((photo, index) => ({ ...photo, id: String(photo.id || `photo-${index + 1}`), chapter: String(photo.chapter || 'memories'), order: Number.isFinite(Number(photo.order)) ? Number(photo.order) : index }))
+    .sort((a, b) => a.order - b.order);
+  const albumChapters = [...new Set(albumPhotos.map(photo => photo.chapter))];
   let progress = new Set();
   const esc = (value = '') => String(value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const arrow = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-5-5 5 5-5 5"/></svg>';
@@ -31,12 +39,14 @@ export function mountBirthdayUI(callbacks = {}) {
       </header>
       <div class="bd-top-actions">
         <button class="bd-quiet-button bd-house-button" type="button" data-action="house" aria-expanded="false" aria-controls="bd-house-menu">小屋里的心意 <span aria-hidden="true">⌂</span></button>
-        <button class="bd-quiet-button" type="button" data-action="letter">一封给你的信 <span aria-hidden="true">↗</span></button>
+        <button class="bd-quiet-button" type="button" data-action="birthday-note">生日小笺 <span aria-hidden="true">↗</span></button>
         <button class="bd-icon-button bd-music" type="button" data-action="music" aria-label="背景音乐尚未添加" title="背景音乐尚未添加" aria-pressed="false"><span class="bd-music-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="bd-music-label">静候一首歌</span></button>
       </div>
       <aside class="bd-house-menu" id="bd-house-menu" hidden aria-label="小屋里的心意">
         <p>留给你的，都是小小的偏爱。</p><button type="button" data-action="birthday-signs">✦ 门前 · 生日祝福牌 <small>走近看看，为你写的祝福</small></button><button type="button" data-action="stairs">↗ 沿暖灯上二楼 <small>走上楼梯，去看另一份心意</small></button>
         <button type="button" data-action="birthday-room">❀ 二楼 · 生日祝福地毯 <small>把每一步，都铺上祝福</small></button>
+        <button type="button" data-action="visit-album">▧ 二楼 · 我镜头里的你 <small>沿着照片，走过那些被记住的日子</small></button>
+        <button type="button" data-action="album">▤ 翻看全部相册 <small>一张张打开，慢慢看</small></button>
         <button type="button" data-interior="interior-clock">♡ 粉色心形钟 <small>轻触，听时间慢下来</small></button>
         <button type="button" data-interior="interior-wardrobe">♧ 二楼 · 公主的衣柜 <small>打开，看看为你准备的裙子</small></button>
         <button type="button" data-interior="interior-gift">✧ 桌上的礼物 <small>亲手拆开这一份心意</small></button>
@@ -100,39 +110,108 @@ export function mountBirthdayUI(callbacks = {}) {
   }
   function showReader(id) {
     q('.bd-house-menu').hidden=true;q('[data-action="house"]').setAttribute('aria-expanded','false');
-    if (!opened) focusBeforeReader = document.activeElement;
+    const firstOpen = !opened;
+    if (firstOpen) focusBeforeReader = document.activeElement;
     currentId = id;
     opened = true;
     readerOverlay.hidden = false;
+    q('.bd-hud').inert = true;
     root.classList.add('bd-reader-open');
     setMap(false);
     readerScroll.scrollTop = 0;
     reader.focus({ preventScroll: true });
-    callbacks.onOpen?.(id);
+    // Changing a page within the same reader must not pause/cancel the scene again.
+    if (firstOpen) callbacks.onOpen?.(id);
+  }
+  function setReaderMode(mode) {
+    readerMode = mode;
+    reader.classList.remove('bd-letter-reader', 'bd-album-reader', 'bd-note-reader');
+    if (mode !== 'story') reader.classList.add(`bd-${mode}-reader`);
+    readerOverlay.classList.toggle('bd-album-overlay', mode === 'album');
+    q('.bd-reader-label').textContent = mode === 'album' ? 'OUR DAYS, FRAME BY FRAME' : mode === 'note' ? 'A BIRTHDAY NOTE FOR LILY' : 'MEMORIES, KEPT WARM';
   }
   function openStory(id) {
     const story = STORIES.find(item => item.id === id);
     if (!story) return;
-    if (id === 'letter') { openLetter(); return; }
     const index = STORIES.indexOf(story);
-    reader.classList.remove('bd-letter-reader');
+    const nextStory = STORIES[index + 1];
+    setReaderMode('story');
     reader.style.setProperty('--story-color', story.color || '#ddc7a3');
     readerScroll.innerHTML = `<article class="bd-story-article"><div class="bd-story-topline"><span>${esc(story.eyebrow)}</span><span class="bd-story-folio">${String(index + 1).padStart(2, '0')} / 07</span></div><p class="bd-story-date">${esc(story.date)}</p><h2 id="bd-reader-title">${esc(story.title)}</h2><div class="bd-story-divider"><span></span><i aria-hidden="true">${esc(story.icon)}</i><span></span></div><blockquote>${esc(story.quote)}</blockquote><div class="bd-story-body">${story.paragraphs.map(text => `<p>${esc(text)}</p>`).join('')}</div><p class="bd-story-endmark" aria-hidden="true">✦</p></article>`;
-    readerFooter.innerHTML = `<button class="bd-text-button" type="button" data-action="close">合上回忆，继续漫步</button><button class="bd-next-button" type="button" data-story="${esc(STORIES[index + 1].id)}"><span>${index === 5 ? '读那封写给你的信' : '下一段回忆'}</span>${arrow}</button>`;
+    readerFooter.innerHTML = `<button class="bd-text-button" type="button" data-action="close">合上回忆，继续漫步</button>${nextStory ? `<button class="bd-next-button" type="button" data-story="${esc(nextStory.id)}"><span>${nextStory.id === 'letter' ? '最后一条线索' : '下一段回忆'}</span>${arrow}</button>` : `<button class="bd-next-button" type="button" data-action="close"><span>回到雪地，寻找线索</span>${arrow}</button>`}`;
     showReader(id);
   }
+  function openBirthdayNote() {
+    setReaderMode('note');
+    reader.style.setProperty('--story-color', '#eac6c5');
+    readerScroll.innerHTML = `<article class="bd-letter-article bd-birthday-note"><div class="bd-story-topline"><span>HAPPY 21ST BIRTHDAY</span><span class="bd-story-folio">1029</span></div><p class="bd-story-date">${esc(RECEIVER.birthday)} · FOR LILY</p><h2 id="bd-reader-title">${esc(BIRTHDAY_NOTE.title)}</h2><div class="bd-story-divider"><span></span><i aria-hidden="true">✦</i><span></span></div><p class="bd-letter-salutation">${esc(BIRTHDAY_NOTE.salutation)}</p><div class="bd-story-body bd-letter-body">${BIRTHDAY_NOTE.paragraphs.map(text => `<p>${esc(text)}</p>`).join('')}</div><div class="bd-letter-signature"><span>${esc(BIRTHDAY_NOTE.signature)}</span><time datetime="2026-10-29">${esc(BIRTHDAY_NOTE.date)}</time></div></article>`;
+    readerFooter.innerHTML = `<button class="bd-text-button" type="button" data-action="close">把祝福收好，继续逛逛</button><button class="bd-next-button" type="button" data-action="album"><span>去翻翻那些照片</span>${arrow}</button>`;
+    showReader('birthday-note');
+    return true;
+  }
+  function renderAlbumPhoto(index) {
+    if (!albumPhotos.length) return;
+    albumIndex = Math.max(0, Math.min(albumPhotos.length - 1, index));
+    const photo = albumPhotos[albumIndex];
+    currentId = `album:${photo.id}`;
+    const width = Math.max(1, Number(photo.width) || 1400);
+    const height = Math.max(1, Number(photo.height) || 1400);
+    q('.bd-album-frame').innerHTML = `<img src="${esc(photo.src)}" alt="${esc(photo.title || '被珍藏的一刻')}" width="${width}" height="${height}" style="--album-native-width:${width}px;--album-native-height:${height}px" decoding="async" loading="eager"><p class="bd-album-error" hidden>这一张暂时没有加载出来，可以先翻下一张，再回来看看。</p>`;
+    q('.bd-album-frame img').addEventListener('error', event => { event.target.hidden = true; q('.bd-album-error').hidden = false; }, { once: true });
+    q('.bd-album-period').textContent = photo.period || photo.chapterTitle || '被记住的日子';
+    q('#bd-reader-title').textContent = photo.title || '被珍藏的一刻';
+    q('.bd-album-caption').textContent = photo.caption || '有些很平常的瞬间，后来成了很舍不得忘记的回忆。';
+    q('.bd-album-position').textContent = `${String(albumIndex + 1).padStart(2, '0')} / ${String(albumPhotos.length).padStart(2, '0')}`;
+    q('.bd-album-announcement').textContent = `第 ${albumIndex + 1} 张，共 ${albumPhotos.length} 张。${photo.title || '被珍藏的一刻'}`;
+    q('[data-action="album-prev"]').disabled = albumIndex === 0;
+    q('[data-action="album-next"]').disabled = albumIndex === albumPhotos.length - 1;
+    root.querySelectorAll('[data-album-photo]').forEach(button => {
+      const selected = button.dataset.albumPhoto === photo.id;
+      button.classList.toggle('is-selected', selected);
+      button.setAttribute('aria-pressed', String(selected));
+    });
+    root.querySelectorAll('[data-album-chapter]').forEach(button => {
+      const selected = button.dataset.albumChapter === photo.chapter;
+      button.classList.toggle('is-selected', selected);
+      button.setAttribute('aria-pressed', String(selected));
+    });
+    const activeThumb = Array.from(root.querySelectorAll('[data-album-photo]')).find(button => button.dataset.albumPhoto === photo.id);
+    activeThumb?.scrollIntoView?.({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+  }
+  function openAlbum(photoId) {
+    if (!albumPhotos.length) { toast('照片正在被妥帖地收进相册，稍后再来看看。'); return false; }
+    const matched = albumPhotos.findIndex(photo => photo.id === photoId);
+    const index = matched >= 0 ? matched : albumIndex;
+    if (readerMode !== 'album' || !opened) {
+      setReaderMode('album');
+      reader.style.setProperty('--story-color', '#eac6c5');
+      readerScroll.innerHTML = `<section class="bd-album-layout" aria-label="我们的照片相册"><div class="bd-album-main"><figure class="bd-album-figure"><div class="bd-album-frame"></div></figure><aside class="bd-album-details"><p class="bd-album-eyebrow">在我的镜头里，一直有你</p><p class="bd-album-period"></p><h2 id="bd-reader-title"></h2><p class="bd-album-caption"></p><nav class="bd-album-chapters" aria-label="按回忆章节翻看">${albumChapters.map(chapter => { const first = albumPhotos.find(photo => photo.chapter === chapter); return `<button type="button" data-album-chapter="${esc(chapter)}" aria-pressed="false">${esc(first.chapterTitle || chapter)}</button>`; }).join('')}</nav><p class="bd-album-hint">照片可以慢慢看，故事也可以慢慢想。</p></aside></div><nav class="bd-album-thumbnails" aria-label="选择照片">${albumPhotos.map((photo, index) => `<button type="button" data-album-photo="${esc(photo.id)}" aria-label="第${index + 1}张：${esc(photo.title || '被珍藏的一刻')}" aria-pressed="false"><img src="${esc(photo.thumb || photo.src)}" alt="" loading="lazy" decoding="async"><span>${String(index + 1).padStart(2, '0')}</span></button>`).join('')}</nav><p class="bd-album-announcement" aria-live="polite" aria-atomic="true"></p></section>`;
+      readerFooter.innerHTML = `<button class="bd-text-button" type="button" data-action="close">合上相册，继续漫步</button><div class="bd-album-pagination"><button type="button" data-action="album-prev" aria-label="上一张照片">← <span>上一张</span></button><span class="bd-album-position"></span><button type="button" data-action="album-next" aria-label="下一张照片"><span>下一张</span> →</button></div>`;
+    }
+    renderAlbumPhoto(index);
+    showReader(`album:${albumPhotos[albumIndex].id}`);
+    return true;
+  }
+  function unlockSecretLetter() {
+    secretUnlocked = true;
+    return true;
+  }
   function openLetter() {
-    reader.classList.add('bd-letter-reader');
+    if (!secretUnlocked) { toast('还有一份安静的礼物，留在“属于你的那棵树”下。'); return false; }
+    setReaderMode('letter');
     reader.style.setProperty('--story-color', '#eac6c5');
     readerScroll.innerHTML = `<article class="bd-letter-article"><div class="bd-story-topline"><span>CHAPTER 07 · 一封写给你的信</span><span class="bd-story-folio">07 / 07</span></div><p class="bd-story-date">${esc(RECEIVER.birthday)} · FOR MY DEAR LILY</p><h2 id="bd-reader-title">把没说出口的话，<br>慢慢说给你听</h2><div class="bd-story-divider"><span></span><i aria-hidden="true">♡</i><span></span></div><p class="bd-letter-salutation">${esc(LETTER.salutation)}</p><div class="bd-story-body bd-letter-body">${LETTER.paragraphs.map(text => `<p>${esc(text)}</p>`).join('')}</div><div class="bd-letter-signature"><span>${esc(LETTER.signature)}</span><time datetime="2026-10-29">${esc(LETTER.date)}</time></div><div class="bd-letter-postscript"><span aria-hidden="true">✦</span><p>你可以慢慢想，<br>今天先好好过生日。</p></div></article>`;
     readerFooter.innerHTML = `<button class="bd-text-button" type="button" data-action="close">把心意好好收下</button><button class="bd-next-button" type="button" data-action="fireworks-close"><span>为你点亮天空</span>${star}</button>`;
-    showReader('letter');
+    showReader('secret-letter');
+    return true;
   }
   function close() {
     if (!opened) return;
     opened = false;
     currentId = null;
     readerOverlay.hidden = true;
+    q('.bd-hud').inert = false;
+    setReaderMode('story');
     root.classList.remove('bd-reader-open');
     if (focusBeforeReader?.isConnected) focusBeforeReader.focus({ preventScroll: true });
     callbacks.onClose?.();
@@ -188,6 +267,16 @@ export function mountBirthdayUI(callbacks = {}) {
     if (musicAvailable && title) q('.bd-music').title = title;
   }
   const onClick = event => {
+    const photoButton = event.target.closest('[data-album-photo]');
+    if (photoButton && root.contains(photoButton)) {
+      renderAlbumPhoto(albumPhotos.findIndex(photo => photo.id === photoButton.dataset.albumPhoto));
+      return;
+    }
+    const chapterButton = event.target.closest('[data-album-chapter]');
+    if (chapterButton && root.contains(chapterButton)) {
+      renderAlbumPhoto(albumPhotos.findIndex(photo => photo.chapter === chapterButton.dataset.albumChapter));
+      return;
+    }
     const interiorButton = event.target.closest('[data-interior]');
     if (interiorButton && root.contains(interiorButton)) {
       q('.bd-house-menu').hidden = true;
@@ -212,7 +301,12 @@ export function mountBirthdayUI(callbacks = {}) {
         break;
       }
       case 'stairs': q('.bd-house-menu').hidden=true;q('[data-action="house"]').setAttribute('aria-expanded','false');callbacks.onStairs?.();break;
-      case 'letter': navigate('letter'); break;
+      case 'birthday-note': if (callbacks.onBirthdayNote) callbacks.onBirthdayNote(); else openBirthdayNote(); break;
+      case 'letter': openStory('letter'); break;
+      case 'visit-album': q('.bd-house-menu').hidden=true;q('.bd-house-button').setAttribute('aria-expanded','false');if (callbacks.onVisitAlbum) callbacks.onVisitAlbum(); else openAlbum();break;
+      case 'album': if (callbacks.onAlbum) callbacks.onAlbum(); else openAlbum();break;
+      case 'album-prev': if (readerMode === 'album' && albumIndex > 0) renderAlbumPhoto(albumIndex - 1);break;
+      case 'album-next': if (readerMode === 'album' && albumIndex < albumPhotos.length - 1) renderAlbumPhoto(albumIndex + 1);break;
       case 'close': close(); break;
       case 'near': if (nearTarget) { if (callbacks.onInteract) callbacks.onInteract(nearTarget.id); else navigate(nearTarget.id); } break;
       case 'fireworks-close': close(); callbacks.onFireworks?.(); break;
@@ -235,23 +329,30 @@ export function mountBirthdayUI(callbacks = {}) {
     if (event.key === 'Escape') {
       q('.bd-house-menu').hidden = true;
       q('[data-action="house"]').setAttribute('aria-expanded', 'false');
-      if (opened) { event.preventDefault(); close(); }
+      if (opened) { event.preventDefault(); event.stopPropagation(); close(); }
       else setMap(false);
     }
     if (!opened) return;
+    if (readerMode === 'album' && ['ArrowLeft', 'ArrowRight'].includes(event.key)) {
+      event.preventDefault();
+      event.stopPropagation();
+      renderAlbumPhoto(albumIndex + (event.key === 'ArrowRight' ? 1 : -1));
+      return;
+    }
     if (event.key === 'Tab') {
-      const focusables = Array.from(reader.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])')).filter(el => !el.disabled && !el.hidden);
+      const focusables = Array.from(reader.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => !el.disabled && !el.closest('[hidden]') && !el.closest('[inert]'));
       const first = focusables[0]; const last = focusables.at(-1);
-      if (event.shiftKey && (document.activeElement === first || document.activeElement === reader)) { event.preventDefault(); last?.focus(); }
+      if (!reader.contains(document.activeElement) || document.activeElement === reader) { event.preventDefault(); (event.shiftKey ? last : first)?.focus(); }
+      else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
     }
-    if (['w', 'a', 's', 'd', 'W', 'A', 'S', 'D', ' '].includes(event.key)) event.stopPropagation();
+    if (['w', 'a', 's', 'd', 'e', 'W', 'A', 'S', 'D', 'E', ' '].includes(event.key)) event.stopPropagation();
   };
   root.addEventListener('click', onClick);
   document.addEventListener('keydown', onKeydown);
   refreshMusic();
   return {
-    openStory, openLetter, close, setProgress, setNearTarget, setReady, begin,
+    openStory, openLetter, unlockSecretLetter, openBirthdayNote, openAlbum, close, setProgress, setNearTarget, setReady, begin,
     setWishPhase(on){q('.bd-wish-phase').hidden=!on;root.classList.toggle('bd-wishing',on);},
     setWishRemaining(seconds,duration=20){q('.bd-wish-phase i').style.setProperty('--wish-progress',String(Math.max(0,Math.min(1,(seconds||0)/duration))));const line=seconds>duration*2/3?'愿你一直有勇气，做自己喜欢的样子。':seconds>duration/3?'愿你的每一天，都有小小的甜。':'下一场雪，我还想陪你看。';if(q('.bd-wish-phase p').textContent!==line)q('.bd-wish-phase p').textContent=line;},
     setShowState(on){q('.bd-show-controls').hidden=!on;q('.bd-fireworks').hidden=on;root.classList.toggle('bd-show-active',on);},

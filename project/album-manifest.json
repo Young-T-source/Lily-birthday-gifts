@@ -1,0 +1,43 @@
+{
+  "version": 9,
+  "title": "那些被好好记住的瞬间",
+  "chapters": [
+    {"id":"first","title":"初次入镜","period":"故事刚开始的时候"},
+    {"id":"campus","title":"白马的课堂","period":"2024 · 大一上学期"},
+    {"id":"outing","title":"第一次一起出发","period":"白马校区 · 那一次出游"},
+    {"id":"everyday","title":"镜头里，渐渐都是你","period":"相伴的日常"},
+    {"id":"winter","title":"隔着屏幕的冬天","period":"大一寒假"},
+    {"id":"summer","title":"又一个盛夏","period":"大一将结束的时候"},
+    {"id":"keepsakes","title":"一直随身带着的珍贵","period":"被认真收藏的礼物"}
+  ],
+  "photos": [
+    {"id":"photo-01","chapter":"first","title":"没有舍得删掉的第一张","caption":"你第一次出现在我的镜头里。你说这是丑照，催我赶紧删掉；我却舍不得。我想，有一天它会成为我们故事里，一份很特别的见证。","invitation":true,"sky":true},
+    {"id":"photo-02","chapter":"campus","title":"镜头，悄悄留了一个角度","caption":"入学后的第一次遴选大会，我负责主持，也特意在相机里，为你留了一个拍摄的角度。","invitation":true},
+    {"id":"photo-09","chapter":"campus","title":"认真说话的你","caption":"白马的教室，熟悉的课桌。那时的我，已经会在人群里，先找到你。"},
+    {"id":"photo-10","chapter":"campus","title":"留下来的小小一格","caption":"这张照片很小，却记着那个站在教室里、认真表达自己的你。"},
+    {"id":"photo-11","chapter":"campus","title":"想留住的笑容","caption":"像素不多，笑容却很清楚地留在记忆里。"},
+    {"id":"photo-04","chapter":"campus","title":"班会结束，回忆留下","caption":"思政主题班会结束后，留在相机里的这一刻，后来也成了白马时光的一页。","period":"2024.11.21 · 白马校区"},
+    {"id":"photo-26","chapter":"outing","title":"红外衣，小熊猫，还有你","caption":"那次一起出去玩，你穿着红色外衣，背着小熊猫包。你带我走进你熟悉的城市，我也记住了好多人生的第一次。","invitation":true,"sky":true},
+    {"id":"photo-05","chapter":"outing","title":"第一次出游的合照","caption":"一起吃饭，一起逛你熟悉的地方。照片只留下了一瞬间，那一天却被我回味了很久。","invitation":true,"sky":true},
+    {"id":"photo-20","chapter":"outing","title":"公交车上的一小段安静","caption":"你在公交车上歪着头睡着了。一路的热闹里，也有这样安安静静、让我记了很久的一小段。","invitation":true,"sky":true},
+    {"id":"photo-06","chapter":"outing","title":"站台玻璃里的我们","caption":"回程的站台，把我们一起留在了玻璃里。那天的好多细节，到现在想起，仍然会开心。"},
+    {"id":"photo-13","chapter":"outing","title":"同一段路，另一种颜色","caption":"同一张站台的倒影，另一种颜色。走过的路，也就多了一种被记住的方式。"},
+    {"id":"photo-15","chapter":"outing","title":"户外的一次定格","caption":"一起出去的日子里，留下一张合照。原来的小小修饰也保留着，那就是当时的样子。"},
+    {"id":"photo-14","chapter":"everyday","title":"试戴我的眼镜","caption":"白马校区，6105，陈磊老师的办公室。你试戴我的眼镜，让我帮你记录。我觉得很合适，有点儒雅，又很可爱，哈哈。","invitation":true,"sky":true},
+    {"id":"photo-27","chapter":"everyday","title":"课桌旁的一个回头","caption":"普通的教室里，一个回头也值得被留下。相伴久了，镜头里就渐渐多了好多这样的你。"},
+    {"id":"photo-12","chapter":"everyday","title":"靠近一点，拍一张","caption":"一起走过的日常，有时候只用一张靠在一起的合照，就能把当时的温度记起来。"},
+    {"id":"photo-16","chapter":"everyday","title":"校园的灯亮起来以后","caption":"校园的夜色里，你又一次出现在我的镜头里。一起吃饭、自习、走回去，平常的小事也慢慢变得珍贵。"},
+    {"id":"photo-17","chapter":"everyday","title":"你比小熊还会笑","caption":"白马校区，热热闹闹的布置，还有站在小熊身旁笑着的你。那段互相陪伴的日子，被好好留在了相机里。","invitation":true,"sky":true},
+    {"id":"photo-18","chapter":"everyday","title":"再换一个角度","caption":"同一个地方，再换一个角度。你配合着镜头，我也就忍不住，多记录一点。"},
+    {"id":"photo-19","chapter":"everyday","title":"把好运也分你一点","caption":"考试前的祝福牌旁，你笑着比了一个手势。那些小小的好运，也想一直留给你。"},
+    {"id":"photo-25","chapter":"everyday","title":"再普通不过，也想留一张","caption":"桌边的一张合照，没什么特别的安排。后来才觉得，一起度过的普通日子，本来就值得被记住。"},
+    {"id":"photo-03","chapter":"winter","title":"寒假里的小馋猫","caption":"大一寒假，隔着屏幕收到你的自拍。你说是臭美，我看着觉得，嗯，确实很可爱。"},
+    {"id":"photo-07","chapter":"winter","title":"屏幕那边的你","caption":"小小的一张自拍，把寒假里隔着距离的两个人，又拉近了一点。"},
+    {"id":"photo-08","chapter":"winter","title":"收到，一份可爱","caption":"这张比着耶的自拍，也被我好好存了下来。有些开心，就是看见你的那一刻。","invitation":true},
+    {"id":"photo-22","chapter":"summer","title":"又到了盛夏","caption":"大一快结束的那个夏天，镜头里是穿着浅蓝色衣服的你。我们也一起走过了，大学的第一年。"},
+    {"id":"photo-23","chapter":"summer","title":"熟悉的第一排","caption":"又一间教室，又一个被我记下来的你。回头看，相机里装着的，其实都是不舍得忘记的日常。"},
+    {"id":"photo-24","chapter":"summer","title":"再相逢，依然如故","caption":"愿此去繁花似锦，再相逢依然如故。那年盛夏的祝福，也想留给今天的你。","invitation":true,"sky":true},
+    {"id":"photo-21","chapter":"keepsakes","title":"一直带着的小熊猫","caption":"你送我的小熊猫，我把它当作吉祥物，也当作一份珍贵的礼物。不论走到哪里都想带上它，每次看到，都会想起你的笑脸。"},
+    {"id":"photo-28","chapter":"keepsakes","title":"要变成光，因为有怕黑的人","caption":"你在白马送我的贺卡，至今还放在书桌上。出门时，书包里也总会带着它。对我来说，它像一份一直陪着我的保佑。","invitation":true,"sky":true}
+  ]
+}

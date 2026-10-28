@@ -14,6 +14,8 @@ Thumbs.db
 /git-deploy/
 /*-audit*.json
 /验收记录*.json
+/private-originals/
+/photo-assets-v9.json
 
 # The build produces a second local entry for convenience. Pages serves index.html.
 /给Lily的生日雪夜.html

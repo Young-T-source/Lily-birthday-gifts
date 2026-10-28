@@ -11,5 +11,5 @@ export const BEATS={
   'interior-tea':{duration:5.0,gesture:'stir',sound:'stir',line:'甜度七分，和你一样。'},
   'interior-cake':{duration:4.5,gesture:'touch',sound:'match',line:'许一个只关于你的愿望。'},
   'loft-book':{duration:4.8,gesture:'open',sound:'paper',line:'这一页，留给你写。'},
-  'loft-rose':{duration:4.4,gesture:'touch',sound:'rose',line:'像这朵玫瑰，你一直是我心里特别的那一个。'}
+  'loft-rose':{duration:4.4,gesture:'touch',sound:'rose',line:'这一朵，留给今天的小寿星。'}
 };

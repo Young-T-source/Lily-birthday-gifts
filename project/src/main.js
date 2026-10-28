@@ -215,7 +215,7 @@ function init() {
   birthday = setupBirthdayGame({scene,camera,renderer,textures,walk,controls,cabin,sound,toast,smoke,snowfall,saveKeepsake});
   celebrationDecor = createCelebrationDecor({scene,textures});
   mark('post+controls');
-  await birthday.world.ready.catch(()=>{});
+  await Promise.all([birthday.world.ready.catch(()=>{}),birthday.gallery.ready]);
   // Source snapshots support the separate Blender export and CPU asset audit.
   // The live world renders the shared geometry and can release those copies.
   scene.traverse(o=>{delete o._v4SourceGeometry;delete o._v4SourceMaterial;delete o._v4SourceBatches;delete o._v4TextSource;});
@@ -540,7 +540,7 @@ function setQuality(q,quiet=false) {
   for(const target of [composer.renderTarget1,composer.renderTarget2])if(target.samples!==samples){target.samples=samples;target.dispose();}
   syncRenderSize(true);
   scene.traverse(o=>{if(o.isLight&&o.shadow&&(o.shadow.mapSize.x!==config.shadow||o.shadow.mapSize.y!==config.shadow)){o.shadow.mapSize.set(config.shadow,config.shadow);o.shadow.map?.dispose();o.shadow.map=null;}});
-  sky?.setQuality?.(q);terrain?.setQuality?.(q);forest?.setQuality?.(q);snowfall?.setQuality?.(q);birthday?.effects.setQuality(q);syncPointScale();invalidateShadows();
+  sky?.setQuality?.(q);terrain?.setQuality?.(q);forest?.setQuality?.(q);snowfall?.setQuality?.(q);birthday?.effects.setQuality(q);birthday?.gallery.setQuality(q);syncPointScale();invalidateShadows();
   bloomPass.enabled=q!=='low';const label={high:'细腻',balanced:'均衡',low:'流畅'}[q];btnQuality.textContent='画质 · '+label+(qualityChoice==='auto'?'（自动）':'');btnQuality.setAttribute('aria-label','切换画质，当前'+label);
   if(!quiet)toast('已切换'+label+'画质',2200);
 }

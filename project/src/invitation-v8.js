@@ -12,8 +12,10 @@ const memories = [
 ];
 
 /** Build-time markup makes the invitation visible before the 3D bundle boots. */
-export function invitationMarkup() {
-  const cards = memories.map(([date, caption], i) => `<div class="iv-orbit-card" style="--slot:${i};--card-delay:${-i * 6.5}s;--float-delay:${-i * .71}s" data-photo-slot="${i}"><figure class="iv-photo-card"><div class="iv-photo-window"><img class="iv-photo" alt="" hidden><span class="iv-empty-photo">${LILY}<i></i><b>${String(i + 1).padStart(2, '0')}</b></span></div><figcaption><span>${date}</span><p>${caption}</p></figcaption></figure></div>`).join('');
+export function invitationMarkup(photos=[]) {
+  const esc=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const entries=photos.length?photos.slice(0,10).map(p=>[p.period,p.title,p.id]):memories.slice(0,10);
+  const cards = entries.map(([date, caption,id], i) => `<div class="iv-orbit-card" style="--slot:${i};--card-delay:${-i * 10.4}s;--float-delay:${-i * .71}s" data-photo-slot="${i}" data-photo-id="${esc(id)}"><figure class="iv-photo-card"><div class="iv-photo-window"><img class="iv-photo" alt="${esc(caption)}" hidden><span class="iv-empty-photo">${LILY}<i></i><b>${String(i + 1).padStart(2, '0')}</b></span></div><figcaption><span>${esc(date)}</span><p>${esc(caption)}</p></figcaption></figure></div>`).join('');
   const stars = Array.from({length:36}, (_,i) => `<span class="iv-star" style="--x:${(i * 37 + 11) % 101}%;--y:${(i * 61 + 7) % 101}%;--delay:${-i * .63}s;--size:${i % 6 === 0 ? 7 : i % 3 === 0 ? 4 : 2}px">${i % 6 === 0 ? '✦' : ''}</span>`).join('');
   const confetti = Array.from({length:12}, (_,i) => `<i class="iv-confetti" style="--x:${(i * 29 + 6) % 100}%;--delay:${-i * 2.8}s;--turn:${i * 37}deg;--tint:${i % 3 === 0 ? '#dbaac0' : i % 3 === 1 ? '#f3d6a9' : '#e6a188'}"></i>`).join('');
   return `<div class="iv-night" aria-hidden="true"><div class="iv-halo iv-halo-one"></div><div class="iv-halo iv-halo-two"></div><div class="iv-constellation">${stars}${confetti}</div><div class="iv-ribbon iv-ribbon-one"></div><div class="iv-ribbon iv-ribbon-two"></div><div class="iv-orbit">${cards}</div></div>
@@ -53,21 +55,23 @@ export function mountBirthdayInvitation({photos = [], onEnter, root = document.g
     root = document.createElement('div'); root.id = 'birthday-invitation';
     document.body.appendChild(root);
   }
-  if (!root.querySelector('.iv-letter')) root.innerHTML = invitationMarkup();
+  if (!root.querySelector('.iv-letter')) root.innerHTML = invitationMarkup(photos);
   root.classList.add('iv-root'); root.setAttribute('role', 'dialog'); root.setAttribute('aria-modal', 'true');
   root.setAttribute('aria-labelledby', 'iv-title'); root.setAttribute('aria-busy', 'true'); root.tabIndex = -1;
   root.dataset.state = 'loading'; root.dataset.photos = '0';
   const q = selector => root.querySelector(selector);
   const yes = q('[data-iv-yes]'), no = q('[data-iv-no]');
   let ready = false, entered = false, progress = 0, failed = false, exitTimer;
-  const sources = photos.filter(source => typeof source === 'string' && source.trim()).slice(0, 16);
+  const sources = photos.map(p=>typeof p==='string'?{src:p}:p).filter(p=>typeof p?.src==='string'&&p.src.trim()).slice(0,10);
   const photoCards = [...root.querySelectorAll('[data-photo-slot]')];
   photoCards.forEach((card, i) => {
     if (!sources.length) return;
     const picture = card.querySelector('img');
     picture.addEventListener('load', () => { picture.hidden = false; card.classList.add('has-photo'); }, {once:true});
     picture.addEventListener('error', () => { picture.hidden = true; card.classList.remove('has-photo'); }, {once:true});
-    picture.decoding = 'async'; picture.src = sources[i % sources.length];
+    const p=sources[i%sources.length];picture.decoding = 'async';picture.src=p.thumb||p.src;
+    if(p.title)picture.alt=p.title;
+    if(p.width&&p.height){picture.width=p.width;picture.height=p.height;}
   });
   root.dataset.photos = String(sources.length);
   function syncStats() {

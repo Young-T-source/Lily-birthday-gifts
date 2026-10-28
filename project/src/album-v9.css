@@ -1,0 +1,76 @@
+/* Photo reading stays outside WebGL bloom / depth of field. Full frames, natural proportions. */
+#birthday-ui .bd-album-overlay { padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); }
+#birthday-ui .bd-album-reader { width: min(1380px, 100%); height: min(920px, calc(100dvh - 36px)); max-height: calc(100dvh - 36px); background: radial-gradient(ellipse at 88% 4%, #7d425b3b, transparent 46%), #101b29fa; border-color: #efc7d45e; }
+#birthday-ui .bd-album-reader .bd-reader-scroll { flex: 1; overflow: hidden; scroll-behavior: auto; }
+#birthday-ui .bd-album-reader .bd-reader-toolbar { min-height: 50px; padding: 5px 20px 5px 27px; }
+#birthday-ui .bd-album-reader .bd-reader-label { color: #e5c9d2; }
+#birthday-ui .bd-album-layout { height: 100%; min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; }
+#birthday-ui .bd-album-main { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 300px; overflow: hidden; }
+#birthday-ui .bd-album-figure { min-width: 0; min-height: 0; height: 100%; margin: 0; padding: 18px; background: radial-gradient(ellipse at center, #d4aeb30b, #070e18b0); }
+#birthday-ui .bd-album-frame { position: relative; display: flex; width: 100%; height: 100%; min-width: 0; min-height: 0; align-items: center; justify-content: center; }
+#birthday-ui .bd-album-frame > img { display: block; width: auto; height: auto; max-width: min(100%, var(--album-native-width)); max-height: min(100%, var(--album-native-height)); object-fit: contain; object-position: center; border: 1px solid #fce9dc45; box-shadow: 0 8px 38px #0007; filter: none; image-rendering: auto; animation: bd-album-photo-in .22s ease-out; }
+#birthday-ui .bd-album-details { min-width: 0; min-height: 0; overflow-y: auto; padding: 27px 25px 20px; border-left: 1px solid #d6b1b629; scrollbar-width: thin; scrollbar-color: #a88a97 #0000; }
+#birthday-ui .bd-album-eyebrow { color: #efc8d4; font-size: 11px; line-height: 1.7; letter-spacing: .1em; }
+#birthday-ui .bd-album-period { margin-top: 25px; color: #d6c6b4; font-size: 12px; line-height: 1.7; }
+#birthday-ui .bd-album-reader #bd-reader-title { margin: 9px 0 20px; font-family: var(--bd-serif); font-size: clamp(22px, 2.1vw, 30px); line-height: 1.6; letter-spacing: .025em; text-wrap: pretty; }
+#birthday-ui .bd-album-caption { color: #ece2df; font-size: 14px; line-height: 2; white-space: pre-line; overflow-wrap: anywhere; }
+#birthday-ui .bd-album-chapters { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 28px; padding-top: 18px; border-top: 1px solid #e8bdcb2a; }
+#birthday-ui .bd-album-chapters button { padding: 8px 10px; color: #c5b5bb; background: #ead3da06; border: 1px solid #edc3d025; border-radius: 4px; font-size: 11px; line-height: 1.45; text-align: left; transition: color .15s, background .15s, border-color .15s; }
+#birthday-ui .bd-album-chapters button:hover, #birthday-ui .bd-album-chapters button.is-selected { color: #fff3e6; background: #e3a4bb20; border-color: #edb4c685; }
+#birthday-ui .bd-album-hint { margin-top: 20px; color: #b7a8b1; font-size: 11px; line-height: 1.9; }
+#birthday-ui .bd-album-thumbnails { min-width: 0; display: flex; align-items: center; gap: 9px; overflow-x: auto; overflow-y: hidden; padding: 12px 20px; border-top: 1px solid #d6b1b629; background: #0a1423aa; scrollbar-width: thin; scrollbar-color: #a88a97 #0000; overscroll-behavior-x: contain; }
+#birthday-ui .bd-album-thumbnails button { flex: 0 0 76px; position: relative; height: 66px; padding: 3px; background: #08101b; border: 1px solid #e2bec433; border-radius: 3px; transition: border-color .16s, background .16s; }
+#birthday-ui .bd-album-thumbnails button img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; border-radius: 1px; opacity: .7; }
+#birthday-ui .bd-album-thumbnails button span { position: absolute; right: 3px; bottom: 3px; padding: 2px 5px; color: #fff; background: #09111cd9; font: 10px/1.3 var(--bd-sans); }
+#birthday-ui .bd-album-thumbnails button:hover img, #birthday-ui .bd-album-thumbnails button.is-selected img { opacity: 1; }
+#birthday-ui .bd-album-thumbnails button.is-selected { background: #e8bfd5; border-color: #ffe0ef; }
+#birthday-ui .bd-album-reader .bd-reader-footer { min-height: 61px; padding: 9px 25px; }
+#birthday-ui .bd-album-pagination { display: flex; align-items: center; gap: 18px; }
+#birthday-ui .bd-album-pagination button { min-width: 76px; min-height: 40px; padding: 8px; color: #f8e7dc; background: #e9c1cb0d; border: 1px solid #eac1cb35; border-radius: 3px; font-size: 12px; }
+#birthday-ui .bd-album-pagination button:hover:enabled { background: #e9c1cb22; }
+#birthday-ui .bd-album-pagination button:disabled { color: #a597a1; opacity: .45; cursor: default; }
+#birthday-ui .bd-album-position { min-width: 51px; color: #e8c7d4; font: 12px/1.5 var(--bd-sans); letter-spacing: .08em; text-align: center; font-variant-numeric: tabular-nums; }
+#birthday-ui .bd-album-announcement { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+#birthday-ui .bd-album-error { max-width: 26em; padding: 25px; color: #efcbd5; font-size: 14px; line-height: 2; text-align: center; }
+#birthday-ui .bd-note-reader #bd-reader-title { font-size: clamp(26px, 3vw, 35px); }
+@keyframes bd-album-photo-in { from { opacity: .3; } to { opacity: 1; } }
+@media (max-width: 780px) and (orientation: portrait) {
+  #birthday-ui .bd-album-overlay { padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)); }
+  #birthday-ui .bd-album-reader { height: calc(100dvh - 20px); max-height: calc(100dvh - 20px); }
+  #birthday-ui .bd-album-main { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) minmax(140px, 32%); }
+  #birthday-ui .bd-album-figure { padding: 10px; }
+  #birthday-ui .bd-album-details { padding: 13px 18px 16px; border-left: 0; border-top: 1px solid #d6b1b629; }
+  #birthday-ui .bd-album-eyebrow { display: none; }
+  #birthday-ui .bd-album-period { margin-top: 0; font-size: 11px; }
+  #birthday-ui .bd-album-reader #bd-reader-title { margin: 4px 0 8px; font-size: 23px; line-height: 1.5; }
+  #birthday-ui .bd-album-caption { font-size: 13px; line-height: 1.85; }
+  #birthday-ui .bd-album-chapters { margin-top: 15px; padding-top: 12px; }
+  #birthday-ui .bd-album-hint { display: none; }
+  #birthday-ui .bd-album-thumbnails { gap: 7px; padding: 8px 12px; }
+  #birthday-ui .bd-album-thumbnails button { flex-basis: 59px; height: 51px; }
+  #birthday-ui .bd-album-reader .bd-reader-footer { padding: 7px 12px; gap: 8px; min-height: 53px; }
+  #birthday-ui .bd-album-reader .bd-text-button { max-width: 85px; font-size: 10px; line-height: 1.6; }
+  #birthday-ui .bd-album-pagination { gap: 7px; }
+  #birthday-ui .bd-album-pagination button { min-width: 58px; padding: 6px; min-height: 38px; font-size: 11px; }
+}
+@media (max-height: 620px) and (orientation: landscape) {
+  #birthday-ui .bd-album-overlay { padding: 7px max(10px, env(safe-area-inset-right)) 7px max(10px, env(safe-area-inset-left)); }
+  #birthday-ui .bd-album-reader { height: calc(100dvh - 14px); max-height: calc(100dvh - 14px); }
+  #birthday-ui .bd-album-reader .bd-reader-toolbar { min-height: 39px; }
+  #birthday-ui .bd-album-main { grid-template-columns: minmax(0, 1fr) minmax(220px, 32%); }
+  #birthday-ui .bd-album-figure { padding: 7px 12px; }
+  #birthday-ui .bd-album-details { padding: 13px 17px; }
+  #birthday-ui .bd-album-eyebrow, #birthday-ui .bd-album-hint { display: none; }
+  #birthday-ui .bd-album-period { margin-top: 0; }
+  #birthday-ui .bd-album-reader #bd-reader-title { margin: 5px 0 8px; font-size: 21px; }
+  #birthday-ui .bd-album-caption { font-size: 12px; line-height: 1.85; }
+  #birthday-ui .bd-album-chapters { margin-top: 13px; padding-top: 10px; }
+  #birthday-ui .bd-album-thumbnails { padding: 6px 15px; }
+  #birthday-ui .bd-album-thumbnails button { flex-basis: 57px; height: 43px; }
+  #birthday-ui .bd-album-reader .bd-reader-footer { padding: 4px 18px; min-height: 43px; }
+  #birthday-ui .bd-album-pagination button { min-height: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #birthday-ui .bd-album-frame > img { animation: none; }
+  #birthday-ui .bd-album-chapters button, #birthday-ui .bd-album-thumbnails button { transition: none; }
+}

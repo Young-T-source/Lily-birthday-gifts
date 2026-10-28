@@ -7,16 +7,22 @@ import { terrainHeight } from './environment.js';
 import { createInteriorInteractions } from './interior-interactions.js';
 import { createBirthdayLoft } from './birthday-loft.js';
 import { PERSONAL, BEATS } from './personal.js';
+import { createMemoryGallery } from './memory-gallery-v9.js';
+import { createTreasureTree } from './treasure-tree-v9.js';
 
 export function setupBirthdayGame({scene,camera,renderer,textures,walk,controls,cabin,sound,toast,smoke,snowfall,saveKeepsake}) {
-  const world=createBirthdayWorld({scene,textures});
+  const world=createBirthdayWorld({scene,textures,hasAlbum:!!MEDIA.albumPhotos?.length});
   world.targets.filter(t=>t.id!=='letter').forEach(t=>walk.addCollider('memory '+t.id,t.position.x,t.position.z,.64));
   const effects=createBirthdayEffects({scene,camera,textures,terrainHeight,lowGraphics:innerWidth<700});
   const interior=createInteriorInteractions({scene,textures});
   const loft=createBirthdayLoft({scene,textures});
-  for(const c of [...interior.colliders,...loft.colliders])walk.addColliderBox(c);
+  const gallery=createMemoryGallery({scene,camera,textures,photos:MEDIA.albumPhotos||[]});
+  const treasure=createTreasureTree({scene,textures,terrainHeight});treasure.group.visible=false;
+  for(const c of [...interior.colliders,...loft.colliders,...treasure.colliders])walk.addColliderBox(c);
   const insideTargets=[...interior.targets,...loft.targets];
-  const targets=[...world.targets,...insideTargets];
+  const targets=[...world.targets,...insideTargets,...gallery.targets,treasure.target];
+  const indoors=t=>t.kind==='interior'||t.kind==='album'||t.id==='letter';
+  const reach=t=>t.kind==='album'?9:t.kind==='interior'?1.60:1.80;
   const weather=[...(smoke?.layers||[]).map(l=>({u:l.mat.uniforms.uOpacity,show:.12})),...(snowfall?.group||[]).map(o=>({u:o.material.uniforms.uOpacity,show:.26}))].map(o=>({...o,base:o.u.value}));
   const opened=new Set();
   let near=null,reading=false,begun=false,lastNearId='',touching=null,lastPhase='idle',actionTime=0,ending=null,endingDone=false,caption=null,lastStep=0,stepSide=0,manualPaused=false,lightBeat=0,visitTime=0;
@@ -24,8 +30,12 @@ export function setupBirthdayGame({scene,camera,renderer,textures,walk,controls,
   let song=MEDIA.music?new Audio(MEDIA.music):null;
   if(song){song.loop=true;song.volume=.33;}
   const ui=mountBirthdayUI({
+    albumPhotos:MEDIA.albumPhotos||[],
     onBegin:begin,
     onNavigate:openMemory,
+    onBirthdayNote:openBirthdayNote,
+    onAlbum:()=>openAlbum(),
+    onVisitAlbum:visitAlbum,
     onVisitInterior:visitInterior,
     onStairs:visitStairs,
     onBirthdayRoom:visitBirthdayRoom,
@@ -52,7 +62,7 @@ export function setupBirthdayGame({scene,camera,renderer,textures,walk,controls,
     if(begun)return;begun=true;document.body.classList.add('gift-started');
     const portrait=innerWidth/innerHeight<.85;
     walk.setPose([portrait?.45:-.60,0,portrait?22:17],0,.10);walk.start();
-    world.revealForecourt?.();lightBeat=.8;
+    world.revealForecourt?.();treasure.group.visible=true;lightBeat=.8;
     sound.setEnabled(true).then(()=>syncAudio());
     if(song){sound.attachMusic?.(song);}if(song)song.play().then(()=>ui.setMusicPlaying(true)).catch(()=>ui.setMusicPlaying(false));
     toast('梦琪，欢迎来到为你留灯的雪夜。沿暖灯寻找「美好的回忆」',6500);
@@ -83,7 +93,19 @@ export function setupBirthdayGame({scene,camera,renderer,textures,walk,controls,
     pause();mark(id);
     document.body.classList.toggle('reading-memory',id!=='letter');
     document.body.classList.toggle('reading-letter',id==='letter');
-    if(id==='letter')ui.openLetter();else ui.openStory(id);
+    ui.openStory(id);
+  }
+  function keepReadingPose(){if(!reading&&effects.getStats().fireworksActive)readingReturnPose=walk.getState();}
+  function openBirthdayNote(){if(!begun)begin();keepReadingPose();resetTouch();document.body.classList.remove('reading-memory','reading-letter');ui.openBirthdayNote();}
+  function openAlbum(photoId){if(!begun)begin();keepReadingPose();resetTouch();document.body.classList.remove('reading-memory','reading-letter');ui.openAlbum(photoId);}
+  function visitAlbum(){
+    cancelEnding();if(!begun)begin();ui.close();closeReading();resetTouch();cabin.setDoor(true);if(!walk.active)walk.start();
+    const pose=gallery.getOverviewPose();walk.setPose(pose.position,pose.yaw,pose.pitch);
+    toast('28 张照片，都在这里。轻点任一相框，可以放大、翻页，看看那时的我们。',6500);
+  }
+  function openSecretLetter(){
+    if(!treasure.unlocked)return false;
+    keepReadingPose();resetTouch();ui.unlockSecretLetter();ui.openLetter();document.body.classList.add('reading-letter');return true;
   }
   function visitStairs(){
     cancelEnding();
@@ -122,11 +144,13 @@ export function setupBirthdayGame({scene,camera,renderer,textures,walk,controls,
   function activateTarget(id){
     const target=targets.find(t=>t.id===id);if(!target||reading||touching)return;
     const state=walk.getState();
+    if(indoors(target)!==state.inside)return;
+    if(target.kind==='album'){if(camera.position.distanceTo(target.position)<=reach(target))openAlbum(target.photoId);return;}
     const memory=target.kind!=='interior';
     if(!walk.canReach(target.position,memory?1.80:1.60)||(!memory&&!state.inside)){toast('再靠近一点，就可以轻轻触碰。');return;}
     const beat=BEATS[id]||{duration:4.2,gesture:'open',sound:'paper'};
     const duration=effects.playTouch?.(target.position,beat.gesture,{duration:beat.duration})||beat.duration;
-    touching={id,age:0,duration,beat,memory,contactTime:effects.touchContactTime??1.72,baseCamera:camera.position.clone(),lean:target.position.clone().sub(camera.position).normalize().multiplyScalar(Math.min(.40,Math.max(0,camera.position.distanceTo(target.position)-1.12))),done:false};
+    touching={id,age:0,duration,beat,memory,treasure:target.kind==='treasure',note:id==='letter',contactTime:effects.touchContactTime??1.72,baseCamera:camera.position.clone(),lean:target.position.clone().sub(camera.position).normalize().multiplyScalar(Math.min(.40,Math.max(0,camera.position.distanceTo(target.position)-1.12))),done:false};
     walk.setPaused(true);
     ui.setTouching?.(true);
   }
@@ -162,11 +186,11 @@ export function setupBirthdayGame({scene,camera,renderer,textures,walk,controls,
     let selected=null,dist=Infinity;
     const state=walk.getState();
     for(const target of targets){
-      if(walk.active&&((target.kind==='interior'||target.id==='letter')!==state.inside))continue;
+      if(walk.active&&indoors(target)!==state.inside)continue;
       const hit=ray.intersectObject(target.object,true)[0];if(hit&&hit.distance<dist){selected=target;dist=hit.distance;}
     }
     // Physical reach in first person. The optional map offers accessible chapter selection.
-    if(selected&&(!walk.active||dist<(selected.kind==='interior'?1.60:1.80))&&(!walk.active||walk.canReach(selected.position,selected.kind==='interior'?1.60:1.80))){e.stopImmediatePropagation();activateTarget(selected.id);}
+    if(selected&&(!walk.active||dist<reach(selected))&&(!walk.active||selected.kind==='album'||walk.canReach(selected.position,reach(selected)))){e.stopImmediatePropagation();activateTarget(selected.id);}
     else if(walk.active&&ray.intersectObjects(cabin.doorMeshes,false).length){e.stopImmediatePropagation();walk.interact();}
   });
   function mountEditor(){
@@ -184,7 +208,7 @@ export function setupBirthdayGame({scene,camera,renderer,textures,walk,controls,
     };
   }
   return {
-    world,effects,interior,loft,ui,interact,visitInterior,visitStairs,cancelTouch,syncAudio,
+    world,effects,interior,loft,gallery,treasure,ui,interact,visitInterior,visitStairs,visitAlbum,cancelTouch,syncAudio,
     enter(){return ui.begin();},
     get lightBeat(){return lightBeat;},
     handleEscape(){if(touching)return cancelTouch();if(reading){ui.close();return true;}if(effects.getStats().fireworksActive){manualPaused=false;ui.setShowPaused?.(false);effects.setPaused(false);effects.skip();return true;}return false;},
@@ -193,7 +217,7 @@ export function setupBirthdayGame({scene,camera,renderer,textures,walk,controls,
     update(dt,time){
       dt=document.hidden?0:Math.min(.1,Math.max(0,dt));actionTime+=dt;lightBeat=Math.max(0,lightBeat-dt);syncAudio();
       world.update(dt,time);
-      interior.update(dt,time);loft.update(dt,time);
+      interior.update(dt,time);loft.update(dt,time);treasure.update(reading?0:dt,time);
       if(touching){
         touching.age+=dt;const age=touching.age;
         const smooth=v=>{v=THREE.MathUtils.clamp(v,0,1);return v*v*v*(v*(v*6-15)+10);};
@@ -202,14 +226,18 @@ export function setupBirthdayGame({scene,camera,renderer,textures,walk,controls,
         if(touching.canceling){touching.cancelAge+=dt;camera.position.lerpVectors(touching.cancelCamera,touching.baseCamera,smooth(touching.cancelAge/.28));if(touching.cancelAge>=.28){touching=null;walk.setPaused(false);}}
         else if(!touching.done&&age>=touching.contactTime){
           touching.done=true;sound.touch?.(touching.beat.sound);
-          if(touching.memory){const id=touching.id;world.setOpened(id);ui.setTouching?.(false);openMemory(id);}
+          if(touching.treasure){treasure.open();}
+          else if(touching.note){ui.setTouching?.(false);openBirthdayNote();}
+          else if(touching.memory){const id=touching.id;world.setOpened(id);ui.setTouching?.(false);openMemory(id);}
           else {const result=touching.id.startsWith('loft-')?loft.interact(touching.id):interior.interact(touching.id);caption={point:targets.find(t=>t.id===touching.id).position.clone(),text:touching.beat.line||result?.message,age:0};if(touching.id==='interior-cake')lightBeat=.4;}
         }
+        if(touching?.treasure&&touching.done&&age>=touching.contactTime+.95){openSecretLetter();}
         if(touching&&age>=touching.duration){camera.position.copy(touching.baseCamera);camera.updateMatrixWorld(true);touching=null;walk.setPaused(false);ui.setTouching?.(false);}
       }
       if(caption){caption.age+=dt;const p=caption.point.clone().project(camera);ui.setWorldCaption?.(caption.text,{x:Math.max(.16,Math.min(.84,(p.x+1)/2)),y:Math.max(.22,Math.min(.62,(1-p.y)/2-.13))},caption.age<6.5&&p.z<1);if(caption.age>7)caption=null;}
       const state=walk.getState();effects.update(dt,time,{...state,active:walk.active&&!reading,speed:reading?0:state.speed});
       const skyStats=effects.getStats(),playing=skyStats.fireworksActive;
+      gallery.update(dt,time,{showActive:playing,showTime:skyStats.fireworksTime,phase:skyStats.celebrationPhase,paused:manualPaused,reading,inside:state.inside});
       if(skyStats.celebrationPhase!==lastPhase){lastPhase=skyStats.celebrationPhase;ui.setWishPhase?.(lastPhase==='wish');}
       ui.setWishRemaining?.(skyStats.wishRemaining,skyStats.wishDuration);
       weather.forEach(w=>{w.u.value+=(w.base*(playing?w.show:1)-w.u.value)*Math.min(1,dt*2);});
@@ -220,16 +248,16 @@ export function setupBirthdayGame({scene,camera,renderer,textures,walk,controls,
       if(begun&&!reading&&!touching&&walk.active){
         let min=Infinity;const forward=camera.getWorldDirection(new THREE.Vector3());
         for(const t of targets){
-          if((t.kind==='interior'||t.id==='letter')!==state.inside)continue;
+          if(indoors(t)!==state.inside)continue;
           const delta=t.position.clone().sub(camera.position),d=delta.length();
           const alignment=delta.normalize().dot(forward);
-          if(d>(t.kind==='interior'?1.60:1.80)||alignment<.35||!walk.canReach(t.position,t.kind==='interior'?1.60:1.80))continue;
+          if(d>reach(t)||alignment<(t.kind==='album'?.94:.35)||(t.kind!=='album'&&!walk.canReach(t.position,reach(t))))continue;
           const score=(1-alignment)*3+d*.07;
           if(score<min){min=score;near=t;}
         }
       }
       if((near?.id||'')+(near?.action||'')!==lastNearId){lastNearId=(near?.id||'')+(near?.action||'');ui.setNearTarget(near);}
     },
-    stats(){return{begun,reading,ending:!!ending,endingDone,opened:[...opened],near:near?.id||null,touching:touching?.id||null,worldTargets:world.targets.length,interior:interior.stats(),loft:loft.stats(),effects:effects.getStats(),hasMusic:!!song,audioEnabled:sound.enabled,photos:MEDIA.photos.length};}
+    stats(){return{begun,reading,ending:!!ending,endingDone,opened:[...opened],near:near?.id||null,touching:touching?.id||null,worldTargets:world.targets.length,interior:interior.stats(),loft:loft.stats(),gallery:gallery.stats(),treasure:treasure.stats(),effects:effects.getStats(),hasMusic:!!song,audioEnabled:sound.enabled,photos:MEDIA.albumPhotos?.length||MEDIA.photos.length};}
   };
 }

@@ -101,8 +101,7 @@ export function createBirthdayLoft({scene,textures}) {
   const pen=new THREE.Group();pen.position.set(-.52,F+.643,.13);pen.visible=false;pen.userData.dynamic=true;pen.rotation.y=.16;group.add(pen);
   const barrel=add(new THREE.CylinderGeometry(.006,.006,.24,12),mats.brass,0,0,0,pen);barrel.rotation.x=Math.PI/2;
   const nib=add(new THREE.ConeGeometry(.006,.027,12),mats.trim,0,0,-.133,pen);nib.rotation.x=-Math.PI/2;
-  sign('这里，收藏以后','',1.20,.36,-.32,5.08,-3.236,0,false);
-  // The three photograph frames are owned by birthday-world to retain setPhoto().
+  // The real photo exhibition owns these wall spans, including its heading.
   // A glass-domed rose music box and a small handwritten wish pedestal.
   cyl(.40,.055,mats.wood,2.25,F+.77,.64);for(const x of [2.02,2.48])for(const z of [.42,.86])cyl(.023,.75,mats.brass,x,F+.375,z);
   colliders.push({name:'rose music table',shape:'circle',x:2.25,z:.64,radius:.40,minY:F,maxY:F+.8});
